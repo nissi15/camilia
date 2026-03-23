@@ -13,30 +13,10 @@ const quickActions = [
 ];
 
 export default function TelegramHome() {
-  const { user, loading } = useTelegram();
+  const { user } = useTelegram();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
-        <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center mb-4">
-          <Package className="w-8 h-8 text-gray-400" />
-        </div>
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Account Not Linked</h1>
-        <p className="text-sm text-gray-500 mb-4">
-          Ask your admin for a staff code, then use:<br />
-          <code className="bg-gray-100 px-2 py-1 rounded text-emerald-600 font-mono">/link YOUR_CODE</code>
-        </p>
-      </div>
-    );
-  }
+  // AccessGate in layout handles loading + not-linked states
+  if (!user) return null;
 
   return (
     <div className="p-4 space-y-4">
@@ -52,7 +32,6 @@ export default function TelegramHome() {
       <div className="space-y-3">
         {quickActions
           .filter((a) => {
-            // Restaurant staff doesn't see Receive or Process
             if (user.role === "RESTAURANT_STAFF") {
               return !["Receive Stock", "Process"].includes(a.label);
             }
