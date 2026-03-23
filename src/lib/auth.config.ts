@@ -3,6 +3,7 @@ import type { NextAuthConfig } from "next-auth";
 // This file contains auth config that can be used in Edge middleware
 // It must NOT import Prisma or any Node.js-only modules
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
