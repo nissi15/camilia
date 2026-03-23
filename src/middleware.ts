@@ -15,12 +15,11 @@ export default auth((req) => {
   if (publicRoutes.some((route) => pathname.startsWith(route))) return;
   if (pathname.startsWith("/_next") || pathname.startsWith("/favicon") || pathname.startsWith("/api/auth")) return;
 
-  // Allow Telegram Mini App routes and Telegram API routes (they use their own auth)
+  // Allow Telegram Mini App routes
   if (pathname.startsWith("/tg")) return;
-  if (pathname.startsWith("/api/telegram")) return;
 
-  // Allow upload route (uses dual auth internally)
-  if (pathname.startsWith("/api/upload")) return;
+  // Allow all API routes — each route handles its own auth (NextAuth or Telegram initData)
+  if (pathname.startsWith("/api/")) return;
 
   // Allow static uploads
   if (pathname.startsWith("/uploads")) return;
