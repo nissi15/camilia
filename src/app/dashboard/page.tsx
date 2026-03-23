@@ -1,0 +1,206 @@
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { AppShell } from "@/components/layout/app-shell";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { Package, ClipboardList, Scissors, Trash2, ArrowRight } from "lucide-react";
+import Link from "next/link";
+
+export default async function WarehouseDashboard() {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "WAREHOUSE_ADMIN") redirect("/login");
+
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(startOfDay);
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+  const [totalStock, pendingRequests, processedToday, wasteItems, totalItems, recentRequests, recentSteps] =
+    await Promise.all([
+      prisma.inventoryItem.count({
+        where: { status: { in: ["RECEIVED", "PROCESSED", "PACKAGED"] } },
+      }),
+      prisma.request.count({
+        where: { status: "PENDING" },
+      }),
+      prisma.processingStep.count({
+        where: { startedAt: { gte: startOfDay } },
+      }),
+      prisma.inventoryItem.count({
+        where: { status: "WASTE", createdAt: { gte: startOfWeek } },
+      }),
+      prisma.inventoryItem.count({
+        where: { createdAt: { gte: startOfWeek } },
+      }),
+      prisma.request.findMany({
+        where: { status: { in: ["PENDING", "PACKING"] } },
+        include: { restaurant: true, _count: { select: { items: true } } },
+        orderBy: { requestedAt: "desc" },
+        take: 5,
+      }),
+      prisma.processingStep.findMany({
+        include: {
+          sourceItem: { select: { name: true } },
+          performer: { select: { name: true } },
+        },
+        orderBy: { startedAt: "desc" },
+        take: 5,
+      }),
+    ]);
+
+  const wastePercentage = totalItems > 0 ? (wasteItems / totalItems) * 100 : 0;
+
+  return (
+    <AppShell title="Dashboard">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-on-surface tracking-tight">Dashboard</h1>
+        <p className="text-on-surface-variant mt-1">Central warehouse operations overview</p>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <SummaryCard
+          label="Total Stock"
+          value={String(totalStock)}
+          icon={Package}
+          color="text-tertiary"
+          bgColor="bg-tertiary/10"
+        />
+        <SummaryCard
+          label="Pending Requests"
+          value={String(pendingRequests)}
+          icon={ClipboardList}
+          color="text-amber-600"
+          bgColor="bg-amber-500/10"
+        />
+        <SummaryCard
+          label="Processed Today"
+          value={String(processedToday)}
+          icon={Scissors}
+          color="text-emerald-600"
+          bgColor="bg-emerald-500/10"
+        />
+        <SummaryCard
+          label="Waste % This Week"
+          value={`${wastePercentage.toFixed(1)}%`}
+          icon={Trash2}
+          color="text-error"
+          bgColor="bg-error/10"
+        />
+      </div>
+
+      {/* Two-Column Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Activity */}
+        <Card className="rounded-2xl border-0 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base font-semibold text-on-surface">Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentSteps.length === 0 ? (
+              <p className="text-sm text-on-surface-variant">No recent activity</p>
+            ) : (
+              <div className="space-y-4">
+                {recentSteps.map((s, i) => (
+                  <div key={s.id} className="flex items-start gap-3">
+                    {/* Timeline */}
+                    <div className="flex flex-col items-center">
+                      <div className="w-2.5 h-2.5 rounded-full bg-tertiary mt-1 shrink-0" />
+                      {i < recentSteps.length - 1 && (
+                        <div className="w-px h-full min-h-[28px] bg-tertiary/20 mt-1" />
+                      )}
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 pb-1">
+                      <p className="text-sm font-medium text-on-surface leading-snug">
+                        {s.performer.name}{" "}
+                        <span className="text-on-surface-variant font-normal">
+                          {s.stepType.toLowerCase()}ed
+                        </span>{" "}
+                        &ldquo;{s.sourceItem.name}&rdquo;
+                      </p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">
+                        {s.startedAt.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Pending Requests */}
+        <Card className="rounded-2xl border-0 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-base font-semibold text-on-surface">Pending Requests</CardTitle>
+            <Link
+              href="/requests"
+              className="inline-flex items-center gap-1 text-sm text-tertiary hover:text-tertiary-dim font-medium transition-colors"
+            >
+              View all
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {recentRequests.length === 0 ? (
+              <p className="text-sm text-on-surface-variant">No pending requests</p>
+            ) : (
+              <div className="space-y-2">
+                {recentRequests.map((req) => (
+                  <Link
+                    key={req.id}
+                    href={`/requests/${req.id}`}
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container transition-colors group"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-on-surface group-hover:text-tertiary transition-colors">
+                        {req.requestNumber}
+                      </p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">
+                        {req.restaurant.name} &middot; {req._count.items} items
+                      </p>
+                    </div>
+                    <StatusBadge status={req.status} />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </AppShell>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  icon: Icon,
+  color,
+  bgColor,
+}: {
+  label: string;
+  value: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  bgColor: string;
+}) {
+  return (
+    <Card className="rounded-2xl border-0 shadow-sm">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 rounded-2xl ${bgColor} flex items-center justify-center shrink-0`}>
+            <Icon className={`w-6 h-6 ${color}`} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-2xl font-bold text-on-surface leading-none">{value}</p>
+            <p className="text-xs font-medium text-on-surface-variant uppercase tracking-wide mt-1">{label}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

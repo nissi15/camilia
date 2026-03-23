@@ -1,0 +1,398 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  WAREHOUSE_ADMIN
+  RESTAURANT_STAFF
+}
+
+enum LocationType {
+  WAREHOUSE
+  RESTAURANT
+}
+
+enum ItemStatus {
+  RECEIVED
+  IN_PROCESSING
+  PROCESSED
+  PACKAGED
+  DISPATCHED
+  DELIVERED
+  WASTE
+}
+
+enum StepType {
+  RECEIVE
+  BUTCHER
+  PORTION
+  PACKAGE
+  CUSTOM
+}
+
+enum RequestStatus {
+  PENDING
+  PACKING
+  DISPATCHED
+  DELIVERED
+  CANCELLED
+}
+
+enum RequestPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum RequestItemStatus {
+  PENDING
+  FULFILLED
+  UNAVAILABLE
+}
+
+// ─── Locations ───────────────────────────────────────────────────────────────
+
+model Location {
+  id        String       @id @default(cuid())
+  name      String
+  type      LocationType
+  address   String?
+  phone     String?
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  users          User[]
+  inventoryItems InventoryItem[]
+  requestsFrom   Request[]       @relation("RestaurantRequests")
+  conversationsAsRestaurant Conversation[] @relation("RestaurantConversations")
+  conversationsAsWarehouse  Conversation[] @relation("WarehouseConversations")
+  parLevels      ParLevel[]
+  requestTemplates RequestTemplate[]
+
+  @@map("locations")
+}
+
+// ─── Suppliers ───────────────────────────────────────────────────────────────
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  phone     String?
+  email     String?
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  inventoryItems InventoryItem[]
+
+  @@map("suppliers")
+}
+
+// ─── Users ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         UserRole
+  locationId   String?  @map("location_id")
+  linkCode     String?  @unique @map("link_code")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  location        Location?        @relation(fields: [locationId], references: [id])
+  processingSteps ProcessingStep[]
+  requests        Request[]
+  messages        Message[]
+  notifications   Notification[]
+  telegramLink    TelegramLink?
+  photos          Photo[]
+
+  @@map("users")
+}
+
+// ─── Telegram Link ───────────────────────────────────────────────────────────
+
+model TelegramLink {
+  id           String   @id @default(cuid())
+  userId       String   @unique @map("user_id")
+  telegramId   BigInt   @unique @map("telegram_id")
+  telegramName String?  @map("telegram_name")
+  linkedAt     DateTime @default(now()) @map("linked_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("telegram_links")
+}
+
+// ─── Categories ──────────────────────────────────────────────────────────────
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  parentId    String?  @map("parent_id")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+
+  inventoryItems InventoryItem[]
+  requestItems   RequestItem[]
+  yieldTargets   YieldTarget[]
+  parLevels      ParLevel[]
+
+  @@map("categories")
+}
+
+// ─── Yield Targets ───────────────────────────────────────────────────────────
+
+model YieldTarget {
+  id            String   @id @default(cuid())
+  categoryId    String   @map("category_id")
+  stepType      StepType @map("step_type")
+  targetPercent Decimal  @map("target_percent") @db.Decimal(5, 2)
+
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([categoryId, stepType])
+  @@map("yield_targets")
+}
+
+// ─── Par Levels ──────────────────────────────────────────────────────────────
+
+model ParLevel {
+  id           String  @id @default(cuid())
+  restaurantId String  @map("restaurant_id")
+  categoryId   String  @map("category_id")
+  parQuantity  Int     @map("par_quantity")
+  unitLabel    String  @default("piece") @map("unit_label")
+
+  restaurant Location @relation(fields: [restaurantId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([restaurantId, categoryId])
+  @@map("par_levels")
+}
+
+// ─── Inventory Items ─────────────────────────────────────────────────────────
+
+model InventoryItem {
+  id           String     @id @default(cuid())
+  batchCode    String     @unique @map("batch_code")
+  categoryId   String     @map("category_id")
+  name         String
+  status       ItemStatus
+  weightGrams  Decimal?   @map("weight_grams") @db.Decimal(10, 2)
+  unitCount    Int        @default(1) @map("unit_count")
+  unitLabel    String     @default("piece") @map("unit_label")
+  parentItemId String?    @map("parent_item_id")
+  rootItemId   String?    @map("root_item_id")
+  locationId   String     @map("location_id")
+  supplierId   String?    @map("supplier_id")
+  supplier     String?
+  lotNumber    String?    @map("lot_number")
+  costRwf      Decimal?   @map("cost_rwf") @db.Decimal(12, 2)
+  photoUrl     String?    @map("photo_url")
+  receivedAt   DateTime?  @map("received_at")
+  expiresAt    DateTime?  @map("expires_at")
+  notes        String?
+  metadata     Json       @default("{}")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  category      Category      @relation(fields: [categoryId], references: [id])
+  parentItem    InventoryItem? @relation("ItemLineage", fields: [parentItemId], references: [id])
+  rootItem      InventoryItem? @relation("ItemRoot", fields: [rootItemId], references: [id])
+  location      Location       @relation(fields: [locationId], references: [id])
+  supplierRef   Supplier?      @relation(fields: [supplierId], references: [id])
+
+  childItems      InventoryItem[] @relation("ItemLineage")
+  rootDescendants InventoryItem[] @relation("ItemRoot")
+
+  processingStepsAsSource ProcessingStep[]
+  stepOutputs             ProcessingStepOutput[]
+  fulfilledRequestItems   RequestItem[]
+
+  @@index([parentItemId])
+  @@index([rootItemId])
+  @@index([status, locationId])
+  @@map("inventory_items")
+}
+
+// ─── Processing Steps ────────────────────────────────────────────────────────
+
+model ProcessingStep {
+  id           String    @id @default(cuid())
+  sourceItemId String    @map("source_item_id")
+  stepType     StepType  @map("step_type")
+  stepLabel    String?   @map("step_label")
+  performedBy  String    @map("performed_by")
+  inputWeight  Decimal?  @map("input_weight") @db.Decimal(10, 2)
+  outputWeight Decimal?  @map("output_weight") @db.Decimal(10, 2)
+  wasteWeight  Decimal?  @default(0) @map("waste_weight") @db.Decimal(10, 2)
+  inputCount   Int?      @map("input_count")
+  outputCount  Int?      @map("output_count")
+  photoUrl     String?   @map("photo_url")
+  notes        String?
+  startedAt    DateTime  @default(now()) @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+
+  sourceItem InventoryItem          @relation(fields: [sourceItemId], references: [id])
+  performer  User                   @relation(fields: [performedBy], references: [id])
+  outputs    ProcessingStepOutput[]
+
+  @@index([sourceItemId])
+  @@map("processing_steps")
+}
+
+model ProcessingStepOutput {
+  id               String @id @default(cuid())
+  processingStepId String @map("processing_step_id")
+  outputItemId     String @map("output_item_id")
+
+  processingStep ProcessingStep @relation(fields: [processingStepId], references: [id])
+  outputItem     InventoryItem  @relation(fields: [outputItemId], references: [id])
+
+  @@map("processing_step_outputs")
+}
+
+// ─── Requests ────────────────────────────────────────────────────────────────
+
+model Request {
+  id               String          @id @default(cuid())
+  requestNumber    String          @unique @map("request_number")
+  requestedBy      String          @map("requested_by")
+  restaurantId     String          @map("restaurant_id")
+  status           RequestStatus   @default(PENDING)
+  priority         RequestPriority @default(NORMAL)
+  notes            String?
+  templateId       String?         @map("template_id")
+  dispatchPhotoUrl String?         @map("dispatch_photo_url")
+  deliveryPhotoUrl String?         @map("delivery_photo_url")
+  requestedAt      DateTime        @default(now()) @map("requested_at")
+  packedAt         DateTime?       @map("packed_at")
+  dispatchedAt     DateTime?       @map("dispatched_at")
+  deliveredAt      DateTime?       @map("delivered_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  requester  User               @relation(fields: [requestedBy], references: [id])
+  restaurant Location           @relation("RestaurantRequests", fields: [restaurantId], references: [id])
+  template   RequestTemplate?   @relation(fields: [templateId], references: [id])
+  items      RequestItem[]
+
+  @@index([restaurantId, status])
+  @@map("requests")
+}
+
+model RequestItem {
+  id              String            @id @default(cuid())
+  requestId       String            @map("request_id")
+  categoryId      String?           @map("category_id")
+  description     String
+  quantity        Int
+  unitLabel       String            @default("piece") @map("unit_label")
+  fulfilledItemId String?           @map("fulfilled_item_id")
+  status          RequestItemStatus @default(PENDING)
+
+  request       Request        @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  category      Category?      @relation(fields: [categoryId], references: [id])
+  fulfilledItem InventoryItem? @relation(fields: [fulfilledItemId], references: [id])
+
+  @@map("request_items")
+}
+
+// ─── Request Templates ───────────────────────────────────────────────────────
+
+model RequestTemplate {
+  id           String   @id @default(cuid())
+  name         String
+  restaurantId String   @map("restaurant_id")
+  items        Json     @default("[]")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  restaurant Location  @relation(fields: [restaurantId], references: [id])
+  requests   Request[]
+
+  @@map("request_templates")
+}
+
+// ─── Photos ──────────────────────────────────────────────────────────────────
+
+model Photo {
+  id         String   @id @default(cuid())
+  url        String
+  context    String
+  entityId   String   @map("entity_id")
+  uploadedBy String   @map("uploaded_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  uploader User @relation(fields: [uploadedBy], references: [id])
+
+  @@index([entityId])
+  @@map("photos")
+}
+
+// ─── Messaging ───────────────────────────────────────────────────────────────
+
+model Conversation {
+  id           String   @id @default(cuid())
+  restaurantId String   @map("restaurant_id")
+  warehouseId  String   @map("warehouse_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  restaurant Location  @relation("RestaurantConversations", fields: [restaurantId], references: [id])
+  warehouse  Location  @relation("WarehouseConversations", fields: [warehouseId], references: [id])
+  messages   Message[]
+
+  @@unique([restaurantId, warehouseId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  conversationId String    @map("conversation_id")
+  senderId       String    @map("sender_id")
+  content        String
+  readAt         DateTime? @map("read_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+enum NotificationType {
+  EXPIRY_WARNING
+  LOW_STOCK
+  REQUEST_CREATED
+  REQUEST_STATUS_CHANGED
+  DELIVERY_CONFIRMED
+  NEW_MESSAGE
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  body      String
+  href      String?
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}

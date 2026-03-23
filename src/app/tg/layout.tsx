@@ -1,0 +1,30 @@
+import type { Metadata, Viewport } from "next";
+import { TelegramProvider } from "./providers";
+import { BottomNav } from "@/components/telegram/bottom-nav";
+import Script from "next/script";
+
+export const metadata: Metadata = {
+  title: "StockTrace",
+  description: "Restaurant chain ingredient tracking",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
+export default function TelegramLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
+      <TelegramProvider>
+        <div className="min-h-screen bg-gray-50 pb-20">
+          {children}
+        </div>
+        <BottomNav />
+      </TelegramProvider>
+    </>
+  );
+}
