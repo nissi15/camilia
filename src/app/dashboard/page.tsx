@@ -96,7 +96,7 @@ export default async function WarehouseDashboard() {
         {/* Recent Activity */}
         <Card className="rounded-2xl border-0 shadow-sm">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold text-on-surface">Recent Activity</CardTitle>
+            <CardTitle className="text-lg font-semibold text-on-surface">Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
             {recentSteps.length === 0 ? (
@@ -114,14 +114,14 @@ export default async function WarehouseDashboard() {
                     </div>
                     {/* Content */}
                     <div className="flex-1 min-w-0 pb-1">
-                      <p className="text-sm font-medium text-on-surface leading-snug">
+                      <p className="text-[15px] font-medium text-on-surface leading-snug">
                         {s.performer.name}{" "}
                         <span className="text-on-surface-variant font-normal">
                           {s.stepType.toLowerCase()}ed
                         </span>{" "}
                         &ldquo;{s.sourceItem.name}&rdquo;
                       </p>
-                      <p className="text-xs text-on-surface-variant mt-0.5">
+                      <p className="text-sm text-on-surface-variant mt-0.5">
                         {s.startedAt.toLocaleString()}
                       </p>
                     </div>
@@ -135,7 +135,7 @@ export default async function WarehouseDashboard() {
         {/* Pending Requests */}
         <Card className="rounded-2xl border-0 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="text-base font-semibold text-on-surface">Pending Requests</CardTitle>
+            <CardTitle className="text-lg font-semibold text-on-surface">Pending Requests</CardTitle>
             <Link
               href="/requests"
               className="inline-flex items-center gap-1 text-sm text-tertiary hover:text-tertiary-dim font-medium transition-colors"
@@ -156,10 +156,10 @@ export default async function WarehouseDashboard() {
                     className="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container transition-colors group"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-on-surface group-hover:text-tertiary transition-colors">
+                      <p className="text-[15px] font-medium text-on-surface group-hover:text-tertiary transition-colors">
                         {req.requestNumber}
                       </p>
-                      <p className="text-xs text-on-surface-variant mt-0.5">
+                      <p className="text-sm text-on-surface-variant mt-0.5">
                         {req.restaurant.name} &middot; {req._count.items} items
                       </p>
                     </div>
@@ -197,7 +197,7 @@ function SummaryCard({
           </div>
           <div className="min-w-0">
             <p className="text-2xl font-bold text-on-surface leading-none">{value}</p>
-            <p className="text-xs font-medium text-on-surface-variant uppercase tracking-wide mt-1">{label}</p>
+            <p className="text-sm font-medium text-on-surface-variant uppercase tracking-wide mt-1">{label}</p>
           </div>
         </div>
       </CardContent>
