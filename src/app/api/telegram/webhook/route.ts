@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { bot, miniAppButton } from "@/lib/telegram/bot";
+import { bot, miniAppButton, ensureBotReady } from "@/lib/telegram/bot";
 import { prisma } from "@/lib/prisma";
 import { InlineKeyboard } from "grammy";
 
-// Register bot commands
+// Register bot commands (these register on the singleton, survives within same instance)
 bot.command("start", async (ctx) => {
   const keyboard = miniAppButton("/", "Open StockTrace");
   await ctx.reply(
@@ -162,6 +162,7 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   try {
+    await ensureBotReady();
     await bot.handleUpdate(body);
   } catch (error) {
     console.error("[telegram webhook] Error handling update:", error);

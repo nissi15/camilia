@@ -12,6 +12,19 @@ function createBot(): Bot {
 export const bot = globalForBot.bot ?? createBot();
 if (process.env.NODE_ENV !== "production") globalForBot.bot = bot;
 
+let botInitialized = false;
+
+/**
+ * Ensure bot.init() is called before handling webhook updates.
+ * Grammy requires this in webhook mode to know the bot's own info.
+ */
+export async function ensureBotReady() {
+  if (!botInitialized) {
+    await bot.init();
+    botInitialized = true;
+  }
+}
+
 /**
  * Send a notification to a Telegram user
  */
