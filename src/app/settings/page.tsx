@@ -99,13 +99,13 @@ export default function SettingsPage() {
   return (
     <AppShell title="Settings">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-on-surface tracking-tight">Settings</h1>
-        <p className="text-on-surface-variant mt-1">Manage your profile and preferences</p>
+        <h1 className="text-2xl font-semibold text-on-surface tracking-tight">Settings</h1>
+        <p className="text-sm text-on-surface-variant mt-1">Manage your profile and preferences</p>
       </div>
 
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-3xl mx-auto space-y-6">
         {/* Profile Card */}
-        <Card className="rounded-2xl border-0 shadow-sm">
+        <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
           <CardContent className="p-6">
             <div className="flex items-center gap-5">
               <div className="w-20 h-20 rounded-full bg-tertiary/10 flex items-center justify-center shrink-0">
@@ -136,7 +136,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* Account Information */}
-        <Card className="rounded-2xl border-0 shadow-sm">
+        <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold text-on-surface">
               Account Information
@@ -159,7 +159,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* Notification Preferences */}
-        <Card className="rounded-2xl border-0 shadow-sm">
+        <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold text-on-surface">
               Notification Preferences
@@ -211,7 +211,7 @@ export default function SettingsPage() {
         {role === "WAREHOUSE_ADMIN" && <TelegramManagement />}
 
         {/* Application */}
-        <Card className="rounded-2xl border-0 shadow-sm">
+        <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold text-on-surface">
               Application
@@ -311,7 +311,7 @@ function TelegramManagement() {
   };
 
   return (
-    <Card className="rounded-2xl border-0 shadow-sm">
+    <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-semibold text-on-surface flex items-center gap-2">
           <Smartphone className="w-4 h-4" />
