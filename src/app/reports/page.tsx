@@ -106,10 +106,10 @@ export default function ReportsPage() {
       </div>
 
       <Tabs defaultValue="waste">
-        <TabsList className="rounded-xl bg-surface-container/50 p-1">
-          <TabsTrigger value="waste" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Waste</TabsTrigger>
-          <TabsTrigger value="usage" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Usage</TabsTrigger>
-          <TabsTrigger value="dispatch" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Dispatch Log</TabsTrigger>
+        <TabsList variant="default" className="mb-1">
+          <TabsTrigger value="waste">Waste</TabsTrigger>
+          <TabsTrigger value="usage">Usage</TabsTrigger>
+          <TabsTrigger value="dispatch">Dispatch Log</TabsTrigger>
         </TabsList>
 
         <TabsContent value="waste" className="mt-4">
