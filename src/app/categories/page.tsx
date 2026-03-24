@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Tags, FolderOpen, ChevronDown, ChevronRight, Package } from "lucide-react";
+import { Plus, Trash2, Pencil, Tags, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Category {
@@ -30,25 +29,19 @@ interface FlatCategory {
   parentId: string | null;
 }
 
-const CATEGORY_COLORS = [
-  { bg: "bg-blue-500/10", text: "text-blue-600", border: "border-blue-500/20" },
-  { bg: "bg-emerald-500/10", text: "text-emerald-600", border: "border-emerald-500/20" },
-  { bg: "bg-amber-500/10", text: "text-amber-600", border: "border-amber-500/20" },
-  { bg: "bg-violet-500/10", text: "text-violet-600", border: "border-violet-500/20" },
-  { bg: "bg-rose-500/10", text: "text-rose-600", border: "border-rose-500/20" },
-  { bg: "bg-cyan-500/10", text: "text-cyan-600", border: "border-cyan-500/20" },
-  { bg: "bg-orange-500/10", text: "text-orange-600", border: "border-orange-500/20" },
-  { bg: "bg-indigo-500/10", text: "text-indigo-600", border: "border-indigo-500/20" },
+const NODE_COLORS = [
+  { bg: "bg-blue-500", ring: "ring-blue-200", line: "bg-blue-300", light: "bg-blue-50", text: "text-blue-700" },
+  { bg: "bg-emerald-500", ring: "ring-emerald-200", line: "bg-emerald-300", light: "bg-emerald-50", text: "text-emerald-700" },
+  { bg: "bg-amber-500", ring: "ring-amber-200", line: "bg-amber-300", light: "bg-amber-50", text: "text-amber-700" },
+  { bg: "bg-violet-500", ring: "ring-violet-200", line: "bg-violet-300", light: "bg-violet-50", text: "text-violet-700" },
+  { bg: "bg-rose-500", ring: "ring-rose-200", line: "bg-rose-300", light: "bg-rose-50", text: "text-rose-700" },
+  { bg: "bg-cyan-500", ring: "ring-cyan-200", line: "bg-cyan-300", light: "bg-cyan-50", text: "text-cyan-700" },
+  { bg: "bg-orange-500", ring: "ring-orange-200", line: "bg-orange-300", light: "bg-orange-50", text: "text-orange-700" },
+  { bg: "bg-indigo-500", ring: "ring-indigo-200", line: "bg-indigo-300", light: "bg-indigo-50", text: "text-indigo-700" },
 ];
 
 function getColor(index: number) {
-  return CATEGORY_COLORS[index % CATEGORY_COLORS.length];
-}
-
-function countAllChildren(cat: Category): number {
-  let count = cat.children?.length || 0;
-  cat.children?.forEach(c => { count += countAllChildren(c); });
-  return count;
+  return NODE_COLORS[index % NODE_COLORS.length];
 }
 
 export default function CategoriesPage() {
@@ -59,6 +52,7 @@ export default function CategoriesPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", parentId: "", description: "" });
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   async function fetchCategories() {
     const [tree, flat] = await Promise.all([
@@ -90,7 +84,6 @@ export default function CategoriesPage() {
     setError("");
     const url = editId ? `/api/categories/${editId}` : "/api/categories";
     const method = editId ? "PATCH" : "POST";
-
     const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
@@ -100,13 +93,11 @@ export default function CategoriesPage() {
         description: form.description || null,
       }),
     });
-
     if (!res.ok) {
       const data = await res.json();
       setError(data.error || "Failed");
       return;
     }
-
     setDialogOpen(false);
     fetchCategories();
   }
@@ -125,89 +116,96 @@ export default function CategoriesPage() {
   const topLevel = categories.length;
   const subCategories = totalCategories - topLevel;
 
+  const filteredCategories = searchQuery
+    ? categories.filter(c =>
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.children?.some(ch => ch.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : categories;
+
   return (
     <AppShell title="Categories">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-8">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-bold text-on-surface">Categories</h2>
+            <h1 className="text-2xl font-semibold text-on-surface tracking-tight">Categories</h1>
             <p className="text-sm text-on-surface-variant mt-1">
               Organize your ingredients into categories for easy tracking
             </p>
           </div>
           <Button
             onClick={() => openCreate()}
-            className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl h-10 px-4 shadow-sm"
+            className="bg-tertiary hover:bg-tertiary/90 text-white rounded-lg h-9 px-4 text-sm font-medium"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 mr-1.5" />
             Add Category
           </Button>
         </div>
 
-        {/* Stats row */}
-        {!loading && (
-          <div className="flex gap-3 mt-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container">
-              <Tags className="w-3.5 h-3.5 text-tertiary" />
-              <span className="text-xs font-medium text-on-surface">{totalCategories} total</span>
+        {/* Stats + Search */}
+        <div className="flex items-center justify-between mt-5">
+          <div className="flex gap-6">
+            <div>
+              <p className="text-2xl font-semibold text-on-surface">{totalCategories}</p>
+              <p className="text-xs text-on-surface-variant font-medium">Total</p>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container">
-              <FolderOpen className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-xs font-medium text-on-surface">{topLevel} groups</span>
+            <div className="w-px bg-outline-variant/20" />
+            <div>
+              <p className="text-2xl font-semibold text-on-surface">{topLevel}</p>
+              <p className="text-xs text-on-surface-variant font-medium">Groups</p>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container">
-              <Package className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="text-xs font-medium text-on-surface">{subCategories} sub-items</span>
+            <div className="w-px bg-outline-variant/20" />
+            <div>
+              <p className="text-2xl font-semibold text-on-surface">{subCategories}</p>
+              <p className="text-xs text-on-surface-variant font-medium">Sub-items</p>
             </div>
           </div>
-        )}
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant/50" />
+            <Input
+              placeholder="Search categories..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 rounded-lg bg-surface-container border-0 text-sm"
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Content */}
+      {/* Mind Map */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => (
-            <Card key={i} className="rounded-2xl border-0 shadow-sm">
-              <CardContent className="p-5">
-                <div className="animate-pulse space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-surface-container" />
-                    <div className="h-4 w-24 bg-surface-container rounded" />
-                  </div>
-                  <div className="h-3 w-full bg-surface-container rounded" />
-                  <div className="h-3 w-2/3 bg-surface-container rounded" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-2 border-tertiary/30 border-t-tertiary rounded-full animate-spin" />
         </div>
-      ) : categories.length === 0 ? (
-        <Card className="rounded-2xl border-0 shadow-sm">
-          <CardContent className="py-16 flex flex-col items-center">
-            <div className="w-16 h-16 rounded-2xl bg-tertiary/10 flex items-center justify-center mb-4">
-              <Tags className="w-8 h-8 text-tertiary" />
-            </div>
-            <h3 className="text-base font-semibold text-on-surface mb-1">No categories yet</h3>
-            <p className="text-sm text-on-surface-variant mb-4">Create your first category to start organizing ingredients</p>
-            <Button
-              onClick={() => openCreate()}
-              className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Create Category
+      ) : filteredCategories.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="w-16 h-16 rounded-2xl bg-tertiary/10 flex items-center justify-center mb-4">
+            <Tags className="w-8 h-8 text-tertiary" />
+          </div>
+          <h3 className="text-base font-semibold text-on-surface mb-1">
+            {searchQuery ? "No matches found" : "No categories yet"}
+          </h3>
+          <p className="text-sm text-on-surface-variant mb-4">
+            {searchQuery ? "Try a different search term" : "Create your first category to start organizing"}
+          </p>
+          {!searchQuery && (
+            <Button onClick={() => openCreate()} className="bg-tertiary text-white rounded-lg h-9">
+              <Plus className="w-4 h-4 mr-1.5" /> Create Category
             </Button>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {categories.map((cat, i) => (
-            <CategoryCard
+        <div className="space-y-1">
+          {filteredCategories.map((cat, i) => (
+            <MindMapBranch
               key={cat.id}
               category={cat}
               colorIndex={i}
               onEdit={openEdit}
               onDelete={handleDelete}
               onAddChild={openCreate}
+              isRoot
             />
           ))}
         </div>
@@ -215,36 +213,32 @@ export default function CategoriesPage() {
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="rounded-2xl sm:max-w-md">
+        <DialogContent className="rounded-xl sm:max-w-md border border-outline-variant/20">
           <DialogHeader>
-            <DialogTitle className="text-on-surface text-lg">
+            <DialogTitle className="text-on-surface text-lg font-semibold">
               {editId ? "Edit Category" : "New Category"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-2">
             {error && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
                 {error}
               </div>
             )}
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">
-                Name
-              </Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-on-surface">Name</Label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="e.g. Dairy, Meat, Vegetables..."
                 required
-                className="rounded-xl h-10"
+                className="rounded-lg h-9"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">
-                Parent Category
-              </Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-on-surface">Parent Category</Label>
               <Select value={form.parentId} onValueChange={(v) => setForm(f => ({ ...f, parentId: v === "NONE" ? "" : (v ?? "") }))}>
-                <SelectTrigger className="rounded-xl h-10">
+                <SelectTrigger className="rounded-lg h-9">
                   <SelectValue placeholder="None (top-level)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -255,20 +249,20 @@ export default function CategoriesPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">
-                Description <span className="text-on-surface-variant/50 normal-case">(optional)</span>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-on-surface">
+                Description <span className="text-on-surface-variant/50 font-normal">(optional)</span>
               </Label>
               <Input
                 value={form.description}
                 onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
                 placeholder="Brief description..."
-                className="rounded-xl h-10"
+                className="rounded-lg h-9"
               />
             </div>
             <Button
               onClick={handleSave}
-              className="w-full bg-tertiary hover:bg-tertiary/90 text-white rounded-xl h-10 mt-2"
+              className="w-full bg-tertiary hover:bg-tertiary/90 text-white rounded-lg h-9 mt-2"
             >
               {editId ? "Save Changes" : "Create Category"}
             </Button>
@@ -279,197 +273,151 @@ export default function CategoriesPage() {
   );
 }
 
-/* ── Category Card ─────────────────────────────────────────────── */
+/* ── Mind Map Branch ─────────────────────────────────────────────── */
 
-function CategoryCard({
+function MindMapBranch({
   category,
   colorIndex,
   onEdit,
   onDelete,
   onAddChild,
+  isRoot = false,
+  depth = 0,
 }: {
   category: Category;
   colorIndex: number;
   onEdit: (cat: FlatCategory) => void;
   onDelete: (id: string) => void;
   onAddChild: (parentId: string) => void;
+  isRoot?: boolean;
+  depth?: number;
 }) {
   const color = getColor(colorIndex);
-  const totalChildren = countAllChildren(category);
   const hasChildren = category.children && category.children.length > 0;
+  const [expanded, setExpanded] = useState(true);
 
   return (
-    <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 group">
-      <CardContent className="p-5">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", color.bg)}>
-              <Tags className={cn("w-5 h-5", color.text)} />
+    <div className={cn("relative", isRoot && "mb-2")}>
+      {/* Node Row */}
+      <div
+        className="flex items-center group"
+        style={{ paddingLeft: isRoot ? 0 : `${depth * 32 + 24}px` }}
+      >
+        {/* Connector line from parent */}
+        {!isRoot && (
+          <div className="absolute left-0" style={{ left: `${depth * 32 + 8}px` }}>
+            <div className={cn("w-4 h-px", color.line)} style={{ marginTop: '1px' }} />
+          </div>
+        )}
+
+        {/* Node dot */}
+        <div className="relative z-10 mr-3 shrink-0">
+          {isRoot ? (
+            <div className={cn(
+              "w-9 h-9 rounded-xl flex items-center justify-center ring-4 shadow-sm",
+              color.bg, color.ring
+            )}>
+              <Tags className="w-4 h-4 text-white" />
             </div>
-            <div>
-              <h3 className="text-[15px] font-semibold text-on-surface leading-tight">
-                {category.name}
-              </h3>
-              <p className="text-xs text-on-surface-variant mt-0.5">
-                {totalChildren === 0
-                  ? "No sub-categories"
-                  : `${totalChildren} sub-categor${totalChildren === 1 ? "y" : "ies"}`}
-              </p>
-            </div>
+          ) : hasChildren ? (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className={cn(
+                "w-6 h-6 rounded-lg flex items-center justify-center ring-2 transition-all",
+                color.light, color.ring
+              )}
+            >
+              <div className={cn("w-2 h-2 rounded-full", color.bg)} />
+            </button>
+          ) : (
+            <div className={cn("w-2.5 h-2.5 rounded-full ring-2", color.bg, color.ring)} />
+          )}
+        </div>
+
+        {/* Node content */}
+        <div className={cn(
+          "flex items-center gap-3 py-2 px-3 rounded-lg transition-all flex-1 min-w-0",
+          isRoot
+            ? "bg-white shadow-sm border border-outline-variant/15 hover:shadow-md"
+            : "hover:bg-surface-container/50"
+        )}>
+          <div className="flex-1 min-w-0">
+            <span className={cn(
+              "font-medium leading-tight",
+              isRoot ? "text-[15px] text-on-surface" : "text-sm text-on-surface-variant"
+            )}>
+              {category.name}
+            </span>
+            {isRoot && hasChildren && (
+              <span className={cn("ml-2 text-xs font-medium px-1.5 py-0.5 rounded-md", color.light, color.text)}>
+                {category.children.length}
+              </span>
+            )}
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 rounded-lg hover:bg-tertiary/10 hover:text-tertiary"
+            <button
+              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-tertiary/10 text-on-surface-variant/40 hover:text-tertiary transition-colors"
               onClick={() => onAddChild(category.id)}
               title="Add sub-category"
             >
               <Plus className="w-3.5 h-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 rounded-lg hover:bg-surface-container"
+            </button>
+            <button
+              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-surface-container text-on-surface-variant/40 hover:text-on-surface transition-colors"
               onClick={() => onEdit(category)}
               title="Edit"
             >
               <Pencil className="w-3.5 h-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 rounded-lg hover:bg-red-50 hover:text-red-500"
+            </button>
+            <button
+              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-50 text-on-surface-variant/40 hover:text-red-500 transition-colors"
               onClick={() => onDelete(category.id)}
               title="Delete"
             >
               <Trash2 className="w-3.5 h-3.5" />
-            </Button>
+            </button>
           </div>
-        </div>
 
-        {/* Children list */}
-        {hasChildren && (
-          <div className="mt-3 pt-3 border-t border-outline-variant/10">
-            <div className="space-y-0.5">
-              {category.children.map((child) => (
-                <SubCategoryRow
-                  key={child.id}
-                  category={child}
-                  depth={0}
-                  colorIndex={colorIndex}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onAddChild={onAddChild}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-/* ── Sub-Category Row (recursive) ──────────────────────────────── */
-
-function SubCategoryRow({
-  category,
-  depth,
-  colorIndex,
-  onEdit,
-  onDelete,
-  onAddChild,
-}: {
-  category: Category;
-  depth: number;
-  colorIndex: number;
-  onEdit: (cat: FlatCategory) => void;
-  onDelete: (id: string) => void;
-  onAddChild: (parentId: string) => void;
-}) {
-  const [expanded, setExpanded] = useState(true);
-  const hasChildren = category.children && category.children.length > 0;
-  const color = getColor(colorIndex);
-
-  return (
-    <div>
-      <div
-        className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-surface-container/50 group/row transition-colors"
-        style={{ paddingLeft: `${8 + depth * 16}px` }}
-      >
-        {/* Expand/collapse toggle */}
-        <button
-          onClick={() => hasChildren && setExpanded(!expanded)}
-          className="w-4 h-4 flex items-center justify-center shrink-0"
-        >
-          {hasChildren ? (
-            expanded ? (
-              <ChevronDown className="w-3.5 h-3.5 text-on-surface-variant/60" />
-            ) : (
-              <ChevronRight className="w-3.5 h-3.5 text-on-surface-variant/60" />
-            )
-          ) : (
-            <div className={cn("w-1.5 h-1.5 rounded-full", color.bg)} />
+          {/* Expand/collapse for root */}
+          {isRoot && hasChildren && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-surface-container text-on-surface-variant/40 transition-colors"
+            >
+              <svg className={cn("w-4 h-4 transition-transform", expanded && "rotate-90")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
           )}
-        </button>
-
-        {/* Name */}
-        <span className={cn(
-          "flex-1 text-[13px]",
-          hasChildren ? "font-medium text-on-surface" : "text-on-surface-variant"
-        )}>
-          {category.name}
-        </span>
-
-        {/* Child count badge */}
-        {hasChildren && (
-          <span className="text-[10px] font-medium text-on-surface-variant/50 mr-1">
-            {category.children.length}
-          </span>
-        )}
-
-        {/* Hover actions */}
-        <div className="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
-          <button
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-tertiary/10 hover:text-tertiary text-on-surface-variant/50"
-            onClick={() => onAddChild(category.id)}
-            title="Add sub-category"
-          >
-            <Plus className="w-3 h-3" />
-          </button>
-          <button
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-surface-container text-on-surface-variant/50"
-            onClick={() => onEdit(category)}
-            title="Edit"
-          >
-            <Pencil className="w-3 h-3" />
-          </button>
-          <button
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-red-50 hover:text-red-500 text-on-surface-variant/50"
-            onClick={() => onDelete(category.id)}
-            title="Delete"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
         </div>
       </div>
 
-      {/* Nested children */}
+      {/* Vertical connector line for children */}
+      {hasChildren && expanded && (
+        <div
+          className={cn("absolute w-px", color.line)}
+          style={{
+            left: isRoot ? '18px' : `${depth * 32 + 36}px`,
+            top: isRoot ? '44px' : '32px',
+            height: 'calc(100% - 44px)',
+          }}
+        />
+      )}
+
+      {/* Children */}
       {expanded && hasChildren && (
         <div>
           {category.children.map((child) => (
-            <SubCategoryRow
+            <MindMapBranch
               key={child.id}
               category={child}
-              depth={depth + 1}
               colorIndex={colorIndex}
               onEdit={onEdit}
               onDelete={onDelete}
               onAddChild={onAddChild}
+              depth={depth + 1}
             />
           ))}
         </div>

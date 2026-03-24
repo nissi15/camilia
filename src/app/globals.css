@@ -116,7 +116,7 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -126,10 +126,11 @@
     @apply font-sans;
   }
   h1, h2, h3, h4, h5, h6 {
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     color: var(--color-on-surface);
   }
   p {
     color: var(--color-on-surface-variant);
+    line-height: 1.6;
   }
 }

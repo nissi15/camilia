@@ -55,8 +55,8 @@ export default async function WarehouseDashboard() {
     <AppShell title="Dashboard">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-on-surface tracking-tight">Dashboard</h1>
-        <p className="text-on-surface-variant mt-1">Central warehouse operations overview</p>
+        <h1 className="text-2xl font-semibold text-on-surface tracking-tight">Dashboard</h1>
+        <p className="text-sm text-on-surface-variant mt-1">Central warehouse operations overview</p>
       </div>
 
       {/* Summary Stats */}
@@ -94,7 +94,7 @@ export default async function WarehouseDashboard() {
       {/* Two-Column Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity */}
-        <Card className="rounded-2xl border-0 shadow-sm">
+        <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-semibold text-on-surface">Recent Activity</CardTitle>
           </CardHeader>
@@ -133,7 +133,7 @@ export default async function WarehouseDashboard() {
         </Card>
 
         {/* Pending Requests */}
-        <Card className="rounded-2xl border-0 shadow-sm">
+        <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-lg font-semibold text-on-surface">Pending Requests</CardTitle>
             <Link
@@ -189,17 +189,15 @@ function SummaryCard({
   bgColor: string;
 }) {
   return (
-    <Card className="rounded-2xl border-0 shadow-sm">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-4">
-          <div className={`w-12 h-12 rounded-2xl ${bgColor} flex items-center justify-center shrink-0`}>
-            <Icon className={`w-6 h-6 ${color}`} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-2xl font-bold text-on-surface leading-none">{value}</p>
-            <p className="text-sm font-medium text-on-surface-variant uppercase tracking-wide mt-1">{label}</p>
+    <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-medium text-on-surface-variant">{label}</p>
+          <div className={`w-8 h-8 rounded-lg ${bgColor} flex items-center justify-center shrink-0`}>
+            <Icon className={`w-4 h-4 ${color}`} />
           </div>
         </div>
+        <p className="text-2xl font-semibold text-on-surface tracking-tight">{value}</p>
       </CardContent>
     </Card>
   );
