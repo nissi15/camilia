@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface RequestDetail {
   id: string;
@@ -41,9 +42,9 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     fetch(`/api/requests/${id}`)
-      .then((r) => r.json())
+      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
       .then(setRequest)
-      .catch(console.error)
+      .catch(() => toast.error("Failed to load request"))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -57,20 +58,26 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
     if (res.ok) {
       const updated = await res.json();
       setRequest((prev) => prev ? { ...prev, ...updated } : prev);
+      const labels: Record<string, string> = { PACKING: "Packing", DISPATCHED: "Dispatched", DELIVERED: "Delivered", CANCELLED: "Cancelled" };
+      toast.success(`Request marked as ${labels[status] ?? status}`);
+    } else {
+      toast.error("Failed to update request status");
     }
     setUpdating(false);
   }
 
   async function fulfillItem(itemId: string, status: string) {
-    await fetch(`/api/requests/${id}/fulfill`, {
+    const res = await fetch(`/api/requests/${id}/fulfill`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ itemId, status }),
     });
-    // Refresh
-    const res = await fetch(`/api/requests/${id}`);
-    const data = await res.json();
-    setRequest(data);
+    if (!res.ok) {
+      toast.error("Failed to update item");
+      return;
+    }
+    const refreshed = await fetch(`/api/requests/${id}`);
+    if (refreshed.ok) setRequest(await refreshed.json());
   }
 
   if (loading) return <AppShell title="Request"><p className="text-muted-foreground">Loading...</p></AppShell>;
@@ -145,12 +152,12 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
             {/* Action buttons */}
             <div className="pt-3 space-y-2">
               {request.status === "PENDING" && (
-                <Button onClick={() => updateStatus("PACKING")} disabled={updating} className="w-full bg-tertiary hover:bg-tertiary-dim text-on-tertiary rounded-xl">
+                <Button onClick={() => updateStatus("PACKING")} disabled={updating} className="w-full bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">
                   Mark as Packing
                 </Button>
               )}
               {request.status === "PACKING" && (
-                <Button onClick={() => updateStatus("DISPATCHED")} disabled={updating} className="w-full bg-tertiary hover:bg-tertiary-dim text-on-tertiary rounded-xl">
+                <Button onClick={() => updateStatus("DISPATCHED")} disabled={updating} className="w-full bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">
                   Mark as Dispatched
                 </Button>
               )}
@@ -213,7 +220,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                           className="text-error border-error/30 hover:bg-error/5 rounded-xl"
                           onClick={() => fulfillItem(item.id, "UNAVAILABLE")}
                         >
-                          N/A
+                          Unavailable
                         </Button>
                       </div>
                     )}

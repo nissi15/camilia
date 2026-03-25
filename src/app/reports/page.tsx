@@ -12,6 +12,7 @@ import {
 import { gramsToLb } from "@/lib/constants";
 import { TrendingUp, AlertTriangle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const RechartsLoading = () => <div className="h-64 flex items-center justify-center text-sm text-on-surface-variant">Loading chart...</div>;
 
@@ -66,7 +67,7 @@ export default function ReportsPage() {
         setUsage(usageData);
         setDispatch(dispatchData.dispatches || []);
       })
-      .catch(console.error)
+      .catch(() => toast.error("Failed to load reports"))
       .finally(() => setLoading(false));
   }, []);
 

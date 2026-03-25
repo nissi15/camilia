@@ -127,9 +127,14 @@ export default function MessagesPage() {
 
   const fetchMessages = useCallback(async () => {
     if (!activeConversation) return;
-    const res = await fetch(`/api/messages/${activeConversation}`);
-    const data = await res.json();
-    setMessages(data);
+    try {
+      const res = await fetch(`/api/messages/${activeConversation}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setMessages(data);
+    } catch {
+      // polling — silently skip on network error
+    }
   }, [activeConversation]);
 
   useEffect(() => {

@@ -97,17 +97,22 @@ function ProcessingContent() {
   const [notes, setNotes] = useState("");
 
   const fetchQueue = useCallback(async () => {
-    const res = await fetch("/api/inventory?status=RECEIVED&limit=50");
-    const data = await res.json();
-    const processed = await fetch("/api/inventory?status=PROCESSED&limit=50");
-    const processedData = await processed.json();
-    const allItems = [...(data.items || []), ...(processedData.items || [])];
-    setQueue(allItems);
-    setLoading(false);
-
-    if (preselectedId) {
-      const found = allItems.find((i: InventoryItem) => i.id === preselectedId);
-      if (found) setSelectedItem(found);
+    try {
+      const [res, processed] = await Promise.all([
+        fetch("/api/inventory?status=RECEIVED&limit=50"),
+        fetch("/api/inventory?status=PROCESSED&limit=50"),
+      ]);
+      const [data, processedData] = await Promise.all([res.json(), processed.json()]);
+      const allItems = [...(data.items || []), ...(processedData.items || [])];
+      setQueue(allItems);
+      if (preselectedId) {
+        const found = allItems.find((i: InventoryItem) => i.id === preselectedId);
+        if (found) setSelectedItem(found);
+      }
+    } catch {
+      toast.error("Failed to load processing queue");
+    } finally {
+      setLoading(false);
     }
   }, [preselectedId]);
 

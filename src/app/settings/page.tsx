@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -128,7 +128,7 @@ export default function SettingsPage() {
                 </div>
                 <p className="text-xs text-on-surface-variant mt-2 flex items-center gap-1.5">
                   <CalendarDays className="w-3 h-3" />
-                  Member since March 2026
+                  Account managed by administrator
                 </p>
               </div>
             </div>
@@ -280,13 +280,13 @@ function TelegramManagement() {
   const [generating, setGenerating] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
-  useState(() => {
+  useEffect(() => {
     fetch("/api/telegram/staff")
       .then((r) => r.ok ? r.json() : [])
       .then(setStaff)
       .catch(() => {})
       .finally(() => setLoading(false));
-  });
+  }, []);
 
   const generateCode = async (userId: string) => {
     setGenerating(userId);

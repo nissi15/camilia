@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { gramsToLb, STEP_TYPE_LABELS } from "@/lib/constants";
 import { ArrowLeft, GitBranch, Scissors } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface ItemDetail {
   id: string;
@@ -59,21 +60,23 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/inventory/${id}`).then((r) => r.json()),
-      fetch(`/api/inventory/${id}/lineage`).then((r) => r.json()),
+      fetch(`/api/inventory/${id}`).then((r) => r.ok ? r.json() : Promise.reject()),
+      fetch(`/api/inventory/${id}/lineage`).then((r) => r.ok ? r.json() : []),
     ])
       .then(([itemData, lineageData]) => {
         setItem(itemData);
         setLineage(lineageData);
       })
-      .catch(console.error)
+      .catch(() => toast.error("Failed to load item details"))
       .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) {
     return (
       <AppShell title="Item Detail">
-        <p className="text-muted-foreground">Loading...</p>
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <div className="w-7 h-7 border-2 border-tertiary/30 border-t-tertiary rounded-full animate-spin" />
+        </div>
       </AppShell>
     );
   }
@@ -177,7 +180,7 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
                 <>
                   <Separator />
                   <Link href={`/processing?itemId=${item.id}`}>
-                    <Button className="w-full bg-tertiary hover:bg-tertiary-dim text-on-tertiary rounded-xl">
+                    <Button className="w-full bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">
                       <Scissors className="w-4 h-4 mr-2" />
                       Process This Item
                     </Button>

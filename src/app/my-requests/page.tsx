@@ -12,6 +12,7 @@ import { PlusCircle, Search, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface RequestItem {
   id: string;
@@ -41,10 +42,16 @@ export default function MyRequestsPage() {
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/requests");
-    const data = await res.json();
-    setRequests(data.requests || []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/requests");
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setRequests(data.requests || []);
+    } catch {
+      toast.error("Failed to load requests");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { fetchRequests(); }, [fetchRequests]);
