@@ -17,6 +17,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { gramsToLb, lbToGrams } from "@/lib/constants";
+import { toast } from "sonner";
+
+const UNIT_OPTIONS = [
+  { value: "piece", label: "Piece" },
+  { value: "kg",    label: "Kg" },
+  { value: "lb",    label: "Lb" },
+  { value: "g",     label: "Grams" },
+  { value: "oz",    label: "Oz" },
+  { value: "liter", label: "Liter" },
+  { value: "case",  label: "Case" },
+  { value: "box",   label: "Box" },
+  { value: "bag",   label: "Bag" },
+  { value: "bunch", label: "Bunch" },
+  { value: "dozen", label: "Dozen" },
+];
 import { Scissors, Package, Grid3X3, Beef, Plus, Trash2, Check, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -70,7 +85,6 @@ function ProcessingContent() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [step, setStep] = useState(1);
@@ -120,7 +134,6 @@ function ProcessingContent() {
     setWasteWeight("");
     setNotes("");
     setError("");
-    setSuccess("");
   }
 
   function addOutput() {
@@ -179,14 +192,14 @@ function ProcessingContent() {
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error || "Processing failed");
+      const msg = data.error || "Processing failed";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
-    setSuccess("Processing complete! Items created successfully.");
-    setTimeout(() => {
-      router.push(`/inventory/${selectedItem!.id}`);
-    }, 1500);
+    toast.success("Processing complete! Items created successfully.");
+    router.push(`/inventory/${selectedItem!.id}`);
   }
 
   const stepLabels = ["Select Step", "Source Details", "Define Outputs", "Review"];
@@ -211,7 +224,9 @@ function ProcessingContent() {
             </CardHeader>
             <CardContent className="pt-0">
               {loading ? (
-                <p className="text-sm text-on-surface-variant">Loading...</p>
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-5 h-5 border-2 border-tertiary/30 border-t-tertiary rounded-full animate-spin" />
+                </div>
               ) : filteredQueue.length === 0 ? (
                 <p className="text-sm text-on-surface-variant">
                   {searchQuery ? "No matching items." : "No items to process."}
@@ -297,9 +312,6 @@ function ProcessingContent() {
                 {error && (
                   <div className="p-3 rounded-xl bg-error/10 text-error text-sm mb-4">{error}</div>
                 )}
-                {success && (
-                  <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-700 text-sm mb-4">{success}</div>
-                )}
 
                 {/* Step 1 */}
                 {step === 1 && (
@@ -327,7 +339,7 @@ function ProcessingContent() {
                         <Input value={stepLabel} onChange={(e) => setStepLabel(e.target.value)} placeholder="e.g., Marinate, Debone" className="rounded-xl" />
                       </div>
                     )}
-                    <Button onClick={() => setStep(2)} disabled={!stepType} className="bg-tertiary hover:bg-tertiary-dim text-on-tertiary rounded-xl">
+                    <Button onClick={() => setStep(2)} disabled={!stepType} className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">
                       Next Step
                     </Button>
                   </div>
@@ -350,7 +362,7 @@ function ProcessingContent() {
                     </div>
                     <div className="flex gap-3">
                       <Button variant="outline" onClick={() => setStep(1)} className="rounded-xl">Previous Step</Button>
-                      <Button onClick={() => { if (!outputs[0].categoryId) updateOutput(0, "categoryId", selectedItem.category.id); setStep(3); }} className="bg-tertiary hover:bg-tertiary-dim text-on-tertiary rounded-xl">Next Step</Button>
+                      <Button onClick={() => { if (!outputs[0].categoryId) updateOutput(0, "categoryId", selectedItem.category.id); setStep(3); }} className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">Next Step</Button>
                     </div>
                   </div>
                 )}
@@ -369,19 +381,20 @@ function ProcessingContent() {
                     </div>
 
                     {/* Output table header */}
-                    <div className="grid grid-cols-[1fr_80px_80px_32px] gap-3 px-1 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+                    <div className="grid grid-cols-[1fr_80px_64px_110px_32px] gap-3 px-1 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
                       <span>Item Name</span>
                       <span>Weight (lb)</span>
                       <span>Count</span>
+                      <span>Unit</span>
                       <span></span>
                     </div>
 
                     {outputs.map((output, idx) => (
-                      <div key={idx} className="grid grid-cols-[1fr_80px_80px_32px] gap-3 items-center">
+                      <div key={idx} className="grid grid-cols-[1fr_80px_64px_110px_32px] gap-3 items-center">
                         <Input
                           value={output.name}
                           onChange={(e) => updateOutput(idx, "name", e.target.value)}
-                          placeholder={`Output item name`}
+                          placeholder="Output item name"
                           className="rounded-lg border-0 border-b border-outline-variant/30 bg-transparent focus:ring-0 px-1"
                         />
                         <Input
@@ -397,11 +410,24 @@ function ProcessingContent() {
                           onChange={(e) => updateOutput(idx, "unitCount", e.target.value)}
                           className="rounded-lg border-0 border-b border-outline-variant/30 bg-transparent focus:ring-0 px-1 text-center"
                         />
-                        {outputs.length > 1 && (
+                        <Select
+                          value={output.unitLabel}
+                          onValueChange={(v) => updateOutput(idx, "unitLabel", v ?? "piece")}
+                        >
+                          <SelectTrigger className="rounded-lg border-outline-variant/30 h-9 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {UNIT_OPTIONS.map((u) => (
+                              <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {outputs.length > 1 ? (
                           <Button variant="ghost" size="sm" onClick={() => removeOutput(idx)} className="h-8 w-8 p-0">
                             <Trash2 className="w-3.5 h-3.5 text-error" />
                           </Button>
-                        )}
+                        ) : <div className="w-8 h-8" />}
                       </div>
                     ))}
 
@@ -427,7 +453,7 @@ function ProcessingContent() {
 
                     <div className="flex gap-3 pt-2">
                       <Button variant="outline" onClick={() => setStep(2)} className="rounded-xl">Previous Step</Button>
-                      <Button onClick={() => setStep(4)} disabled={outputs.some((o) => !o.name)} className="bg-tertiary hover:bg-tertiary-dim text-on-tertiary rounded-xl">
+                      <Button onClick={() => setStep(4)} disabled={outputs.some((o) => !o.name)} className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">
                         Final Review & Summary
                       </Button>
                     </div>
@@ -459,7 +485,7 @@ function ProcessingContent() {
 
                     <div className="flex gap-3">
                       <Button variant="outline" onClick={() => setStep(3)} className="rounded-xl">Previous Step</Button>
-                      <Button onClick={handleSubmit} disabled={submitting} className="bg-tertiary hover:bg-tertiary-dim text-on-tertiary rounded-xl">
+                      <Button onClick={handleSubmit} disabled={submitting} className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">
                         {submitting ? "Processing..." : "Complete Processing Step"}
                       </Button>
                     </div>

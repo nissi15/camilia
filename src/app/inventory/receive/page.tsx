@@ -16,6 +16,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { lbToGrams, kgToGrams } from "@/lib/constants";
+import { toast } from "sonner";
+
+const UNIT_OPTIONS = [
+  { value: "piece", label: "Piece" },
+  { value: "kg",    label: "Kg" },
+  { value: "lb",    label: "Lb" },
+  { value: "g",     label: "Grams" },
+  { value: "oz",    label: "Oz" },
+  { value: "liter", label: "Liter" },
+  { value: "case",  label: "Case" },
+  { value: "box",   label: "Box" },
+  { value: "bag",   label: "Bag" },
+  { value: "bunch", label: "Bunch" },
+  { value: "dozen", label: "Dozen" },
+];
 
 interface Category {
   id: string;
@@ -78,17 +93,20 @@ export default function ReceiveIngredientPage() {
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error || "Failed to receive ingredient");
+      const msg = data.error || "Failed to receive ingredient";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
     const item = await res.json();
+    toast.success("Ingredient received into stock!");
     router.push(`/inventory/${item.id}`);
   }
 
   return (
     <AppShell title="Receive Ingredient">
-      <Card className="max-w-2xl">
+      <Card className="max-w-2xl rounded-2xl border-0 shadow-sm">
         <CardHeader>
           <CardTitle>Receive New Ingredient</CardTitle>
         </CardHeader>
@@ -172,14 +190,19 @@ export default function ReceiveIngredientPage() {
                       setForm((f) => ({ ...f, unitCount: e.target.value }))
                     }
                   />
-                  <Input
-                    placeholder="piece"
+                  <Select
                     value={form.unitLabel}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, unitLabel: e.target.value }))
-                    }
-                    className="w-24"
-                  />
+                    onValueChange={(v) => setForm((f) => ({ ...f, unitLabel: v ?? "piece" }))}
+                  >
+                    <SelectTrigger className="w-28 rounded-lg">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {UNIT_OPTIONS.map((u) => (
+                        <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
@@ -224,7 +247,7 @@ export default function ReceiveIngredientPage() {
             <div className="flex gap-3 pt-2">
               <Button
                 type="submit"
-                className="bg-tertiary hover:bg-tertiary-dim text-on-tertiary rounded-xl"
+                className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl shadow-sm shadow-tertiary/25"
                 disabled={loading}
               >
                 {loading ? "Receiving..." : "Receive into Stock"}
@@ -233,6 +256,7 @@ export default function ReceiveIngredientPage() {
                 type="button"
                 variant="outline"
                 onClick={() => router.back()}
+                className="rounded-xl"
               >
                 Cancel
               </Button>
