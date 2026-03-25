@@ -301,9 +301,13 @@ export default function CategoriesPage() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-medium text-on-surface">Parent Category</Label>
-              <Select value={form.parentId} onValueChange={(v) => setForm(f => ({ ...f, parentId: v === "NONE" ? "" : (v ?? "") }))}>
+              <Select value={form.parentId || "NONE"} onValueChange={(v) => setForm(f => ({ ...f, parentId: v === "NONE" ? "" : (v ?? "") }))}>
                 <SelectTrigger className="rounded-xl h-9">
-                  <SelectValue placeholder="None (top-level)" />
+                  <SelectValue placeholder="None (top-level)">
+                    {form.parentId
+                      ? (flatCategories.find(c => c.id === form.parentId)?.name ?? "None (top-level)")
+                      : "None (top-level)"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="NONE">None (top-level)</SelectItem>
