@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -25,6 +26,7 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   section?: string;
+  badgeKey?: "notifications" | "messages";
 }
 
 const warehouseNav: NavItem[] = [
@@ -34,8 +36,8 @@ const warehouseNav: NavItem[] = [
   { label: "Requests", href: "/requests", icon: ClipboardList },
   { label: "Categories", href: "/categories", icon: Tags },
   { label: "Reports", href: "/reports", icon: BarChart3, section: "INSIGHTS" },
-  { label: "Messages", href: "/messages", icon: MessageSquare, section: "COMMUNICATION" },
-  { label: "Notifications", href: "/notifications", icon: Bell },
+  { label: "Messages", href: "/messages", icon: MessageSquare, section: "COMMUNICATION", badgeKey: "messages" },
+  { label: "Notifications", href: "/notifications", icon: Bell, badgeKey: "notifications" },
   { label: "Settings", href: "/settings", icon: Settings, section: "SYSTEM" },
 ];
 
@@ -43,8 +45,8 @@ const restaurantNav: NavItem[] = [
   { label: "Dashboard", href: "/my-dashboard", icon: LayoutDashboard, section: "OVERVIEW" },
   { label: "New Request", href: "/new-request", icon: PlusCircle, section: "ORDERS" },
   { label: "My Requests", href: "/my-requests", icon: Send },
-  { label: "Messages", href: "/messages", icon: MessageSquare, section: "COMMUNICATION" },
-  { label: "Notifications", href: "/notifications", icon: Bell },
+  { label: "Messages", href: "/messages", icon: MessageSquare, section: "COMMUNICATION", badgeKey: "messages" },
+  { label: "Notifications", href: "/notifications", icon: Bell, badgeKey: "notifications" },
   { label: "Settings", href: "/settings", icon: Settings, section: "SYSTEM" },
 ];
 
@@ -55,10 +57,42 @@ interface SidebarProps {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const [badges, setBadges] = useState<{ notifications: number; messages: number }>({
+    notifications: 0,
+    messages: 0,
+  });
 
   const isWarehouse = session?.user?.role === "WAREHOUSE_ADMIN";
   const nav = isWarehouse ? warehouseNav : restaurantNav;
+
+  // Fetch badge counts
+  const fetchBadges = useCallback(async () => {
+    try {
+      const [notifRes, convRes] = await Promise.all([
+        fetch("/api/notifications/count"),
+        fetch("/api/messages/conversations"),
+      ]);
+      const notif = notifRes.ok ? await notifRes.json() : { unreadCount: 0 };
+      const convos = convRes.ok ? await convRes.json() : [];
+      const msgUnread = Array.isArray(convos)
+        ? convos.reduce((sum: number, c: { unreadCount: number }) => sum + (c.unreadCount || 0), 0)
+        : 0;
+      setBadges({ notifications: notif.unreadCount || 0, messages: msgUnread });
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    fetchBadges();
+    const interval = setInterval(fetchBadges, 60000);
+    const handleVisibility = () => { if (!document.hidden) fetchBadges(); };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [status, fetchBadges]);
 
   return (
     <>
@@ -104,6 +138,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           {nav.map((item, i) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
+            const badgeCount = item.badgeKey ? badges[item.badgeKey] : 0;
             return (
               <div key={item.href}>
                 {/* Section label */}
@@ -129,9 +164,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     "w-[19px] h-[19px] shrink-0",
                     isActive ? "text-tertiary" : "text-sidebar-dark-text/90"
                   )} />
-                  <span>{item.label}</span>
-                  {isActive && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-tertiary" />
+                  <span className="flex-1">{item.label}</span>
+                  {badgeCount > 0 && (
+                    <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-tertiary text-white text-[10px] font-bold">
+                      {badgeCount > 99 ? "99+" : badgeCount}
+                    </span>
+                  )}
+                  {isActive && badgeCount === 0 && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-tertiary" />
                   )}
                 </Link>
               </div>

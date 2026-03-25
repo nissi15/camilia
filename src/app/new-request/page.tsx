@@ -12,6 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2, Send, FileText } from "lucide-react";
+import { toast } from "sonner";
 
 interface Category {
   id: string;
@@ -24,6 +25,27 @@ interface RequestItemForm {
   quantity: string;
   unitLabel: string;
 }
+
+const UNIT_OPTIONS = [
+  { value: "piece", label: "Piece" },
+  { value: "kg",    label: "Kg" },
+  { value: "lb",    label: "Lb" },
+  { value: "g",     label: "Grams" },
+  { value: "oz",    label: "Oz" },
+  { value: "liter", label: "Liter" },
+  { value: "case",  label: "Case" },
+  { value: "box",   label: "Box" },
+  { value: "bag",   label: "Bag" },
+  { value: "bunch", label: "Bunch" },
+  { value: "dozen", label: "Dozen" },
+];
+
+const PRIORITY_OPTIONS = [
+  { value: "LOW",    label: "Low",    active: "bg-surface-high text-on-surface" },
+  { value: "NORMAL", label: "Normal", active: "bg-tertiary text-white" },
+  { value: "HIGH",   label: "High",   active: "bg-amber-500 text-white" },
+  { value: "URGENT", label: "Urgent", active: "bg-error text-white" },
+];
 
 export default function NewRequestPage() {
   const router = useRouter();
@@ -86,10 +108,13 @@ export default function NewRequestPage() {
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error || "Failed to submit request");
+      const msg = data.error || "Failed to submit request";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
+    toast.success("Request submitted successfully!");
     router.push("/my-requests");
   }
 
@@ -111,55 +136,84 @@ export default function NewRequestPage() {
 
             {/* Item List Builder */}
             <div>
-              <Label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3 block">Item List Builder</Label>
+              <Label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3 block">
+                Item List Builder
+              </Label>
 
-              {/* Table header */}
-              <div className="grid grid-cols-[1fr_1fr_80px_100px_32px] gap-3 px-1 mb-2">
+              {/* Desktop header */}
+              <div className="hidden sm:grid grid-cols-[1fr_1fr_80px_120px_32px] gap-3 px-1 mb-2">
                 <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Category</span>
                 <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Description</span>
-                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Quantity</span>
+                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Qty</span>
                 <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Unit</span>
                 <span></span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3 sm:space-y-2">
                 {items.map((item, idx) => (
-                  <div key={idx} className="grid grid-cols-[1fr_1fr_80px_100px_32px] gap-3 items-center">
-                    <Select value={item.categoryId} onValueChange={(v) => updateItem(idx, "categoryId", v ?? "")}>
-                      <SelectTrigger className="rounded-lg border-outline-variant/30 h-9 text-sm">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      value={item.description}
-                      onChange={(e) => updateItem(idx, "description", e.target.value)}
-                      placeholder="e.g. Organic Roma Tomatoes"
-                      required
-                      className="rounded-lg border-outline-variant/30 h-9 text-sm"
-                    />
-                    <Input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => updateItem(idx, "quantity", e.target.value)}
-                      className="rounded-lg border-outline-variant/30 h-9 text-sm text-center"
-                    />
-                    <Input
-                      value={item.unitLabel}
-                      onChange={(e) => updateItem(idx, "unitLabel", e.target.value)}
-                      placeholder="kg, lb, case"
-                      className="rounded-lg border-outline-variant/30 h-9 text-sm"
-                    />
-                    {items.length > 1 ? (
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeItem(idx)} className="h-9 w-9 p-0">
-                        <Trash2 className="w-3.5 h-3.5 text-error" />
-                      </Button>
-                    ) : <div />}
+                  <div key={idx} className="flex flex-col sm:grid sm:grid-cols-[1fr_1fr_80px_120px_32px] gap-2 sm:gap-3 sm:items-center p-3 sm:p-0 rounded-xl sm:rounded-none bg-surface-container/30 sm:bg-transparent">
+                    {/* Category */}
+                    <div>
+                      <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest sm:hidden mb-1 block">Category</span>
+                      <Select value={item.categoryId} onValueChange={(v) => updateItem(idx, "categoryId", v ?? "")}>
+                        <SelectTrigger className="rounded-lg border-outline-variant/30 h-9 text-sm">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest sm:hidden mb-1 block">Description</span>
+                      <Input
+                        value={item.description}
+                        onChange={(e) => updateItem(idx, "description", e.target.value)}
+                        placeholder="e.g. Organic Roma Tomatoes"
+                        required
+                        className="rounded-lg border-outline-variant/30 h-9 text-sm"
+                      />
+                    </div>
+
+                    {/* Quantity + Unit row on mobile */}
+                    <div className="flex gap-2 sm:contents">
+                      <div className="flex-1 sm:flex-none">
+                        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest sm:hidden mb-1 block">Qty</span>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(idx, "quantity", e.target.value)}
+                          className="rounded-lg border-outline-variant/30 h-9 text-sm text-center"
+                        />
+                      </div>
+                      <div className="flex-1 sm:flex-none">
+                        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest sm:hidden mb-1 block">Unit</span>
+                        <Select value={item.unitLabel} onValueChange={(v) => updateItem(idx, "unitLabel", v ?? "piece")}>
+                          <SelectTrigger className="rounded-lg border-outline-variant/30 h-9 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {UNIT_OPTIONS.map(u => (
+                              <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Delete - inline on mobile */}
+                      <div className="flex items-end sm:items-center">
+                        {items.length > 1 ? (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => removeItem(idx)} className="h-9 w-9 p-0">
+                            <Trash2 className="w-3.5 h-3.5 text-error" />
+                          </Button>
+                        ) : <div className="w-9 h-9" />}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -167,40 +221,40 @@ export default function NewRequestPage() {
               <button
                 type="button"
                 onClick={addItem}
-                className="flex items-center gap-1.5 mt-3 text-sm font-medium text-tertiary hover:text-tertiary-dim transition-colors"
+                className="flex items-center gap-1.5 mt-3 text-sm font-medium text-tertiary hover:text-tertiary/80 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Add Item
               </button>
             </div>
 
-            {/* Priority & Notes row */}
+            {/* Priority & Notes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <Label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2 block">Priority Status</Label>
-                <div className="flex gap-2">
-                  {["NORMAL", "HIGH", "URGENT"].map((p) => (
+                <Label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2 block">
+                  Priority Status
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {PRIORITY_OPTIONS.map((p) => (
                     <button
-                      key={p}
+                      key={p.value}
                       type="button"
-                      onClick={() => setPriority(p)}
+                      onClick={() => setPriority(p.value)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        priority === p
-                          ? p === "URGENT"
-                            ? "bg-error text-white"
-                            : p === "HIGH"
-                              ? "bg-amber-500 text-white"
-                              : "bg-tertiary text-white"
+                        priority === p.value
+                          ? p.active
                           : "bg-surface-container text-on-surface-variant hover:bg-surface-high"
                       }`}
                     >
-                      {p.charAt(0) + p.slice(1).toLowerCase()}
+                      {p.label}
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <Label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2 block">Administrative Notes</Label>
+                <Label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2 block">
+                  Administrative Notes
+                </Label>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -212,17 +266,17 @@ export default function NewRequestPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-4 border-t border-outline-variant/20">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-outline-variant/20">
               <p className="text-xs text-on-surface-variant">
                 By sending this request, it will be logged under your employee profile for inventory tracking.
               </p>
-              <div className="flex gap-3 shrink-0 ml-4">
-                <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-xl">
+              <div className="flex gap-3 shrink-0 w-full sm:w-auto">
+                <Button type="button" variant="outline" onClick={() => router.back()} className="rounded-xl flex-1 sm:flex-none">
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-tertiary hover:bg-tertiary-dim text-on-tertiary rounded-xl gap-2" disabled={loading}>
+                <Button type="submit" className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl gap-2 flex-1 sm:flex-none shadow-sm shadow-tertiary/25" disabled={loading}>
                   <Send className="w-4 h-4" />
-                  {loading ? "Sending..." : "Send Request"}
+                  {loading ? "Sending…" : "Send Request"}
                 </Button>
               </div>
             </div>

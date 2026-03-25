@@ -11,11 +11,7 @@ import {
   Send,
   MessageSquare,
   Search,
-  Paperclip,
-  Smile,
-  Phone,
-  Video,
-  Info,
+  ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -78,11 +74,7 @@ function getDateLabel(dateStr: string) {
     date.getFullYear() === yesterday.getFullYear();
   if (isYesterday) return "YESTERDAY";
   return date
-    .toLocaleDateString([], {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
+    .toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })
     .toUpperCase();
 }
 
@@ -115,17 +107,16 @@ export default function MessagesPage() {
   const [convosLoaded, setConvosLoaded] = useState(false);
 
   const isRestaurant = session?.user?.role === "RESTAURANT_STAFF";
-
   const hasSession = !!session?.user;
 
   useEffect(() => {
     if (convosLoaded || !hasSession) return;
-
     fetch("/api/messages/conversations")
       .then((r) => r.json())
       .then((data) => {
         setConversations(data);
-        if (data.length > 0 && isRestaurant) {
+        // Auto-select first conversation only if restaurant has exactly one
+        if (data.length === 1 && isRestaurant) {
           setActiveConversation(data[0].id);
         }
         setLoading(false);
@@ -143,14 +134,11 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (!activeConversation) return;
-
     fetchMessages();
-
     function startPolling() {
       if (pollRef.current) clearInterval(pollRef.current);
-      pollRef.current = setInterval(fetchMessages, 30000);
+      pollRef.current = setInterval(fetchMessages, 5000);
     }
-
     function handleVisibility() {
       if (document.hidden) {
         if (pollRef.current) clearInterval(pollRef.current);
@@ -160,10 +148,8 @@ export default function MessagesPage() {
         startPolling();
       }
     }
-
     startPolling();
     document.addEventListener("visibilitychange", handleVisibility);
-
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
       document.removeEventListener("visibilitychange", handleVisibility);
@@ -177,14 +163,12 @@ export default function MessagesPage() {
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
     if (!newMessage.trim() || !activeConversation) return;
-
     setSending(true);
     const res = await fetch(`/api/messages/${activeConversation}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: newMessage }),
     });
-
     if (res.ok) {
       const msg = await res.json();
       setMessages((prev) => [...prev, msg]);
@@ -216,132 +200,116 @@ export default function MessagesPage() {
     ? activeConvo?.warehouseName
     : activeConvo?.restaurantName;
 
+  const convoDisplayName = (conv: Conversation) =>
+    isRestaurant ? conv.warehouseName : conv.restaurantName;
+
   const messageGroups = groupMessagesByDate(messages);
+
+  // On mobile, show either conversation list or chat panel
+  const showChatOnMobile = !!activeConversation;
 
   return (
     <AppShell title="Messages">
       <div className="flex h-[calc(100vh-10rem)] gap-0">
-        {/* Left panel - Conversation list */}
-        {!isRestaurant && (
-          <Card className="w-[340px] shrink-0 flex flex-col rounded-2xl rounded-r-none border-0 shadow-sm overflow-hidden">
-            {/* Panel header */}
-            <div className="px-5 pt-5 pb-3">
-              <h2 className="text-lg font-semibold text-on-surface">Messages</h2>
-            </div>
 
-            {/* Search bar */}
-            <div className="px-4 pb-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant/50" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search conversations..."
-                  className="pl-9 rounded-xl bg-surface-container border-0 h-9 text-sm placeholder:text-on-surface-variant/50"
-                />
-              </div>
-            </div>
+        {/* ── Conversation list (always visible, both roles) ── */}
+        <Card className={cn(
+          "w-full md:w-[340px] shrink-0 flex flex-col rounded-2xl md:rounded-r-none border-0 shadow-sm overflow-hidden",
+          showChatOnMobile ? "hidden md:flex" : "flex"
+        )}>
+          <div className="px-5 pt-5 pb-3">
+            <h2 className="text-lg font-semibold text-on-surface">Messages</h2>
+          </div>
 
-            {/* Conversation list */}
-            <ScrollArea className="flex-1">
-              <div className="px-2 pb-2">
-                {loading ? (
-                  <p className="text-sm text-on-surface-variant p-3">Loading...</p>
-                ) : filteredConversations.length === 0 ? (
-                  <div className="text-center py-12 px-4">
-                    <MessageSquare className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
-                    <p className="text-sm text-on-surface-variant">
-                      {searchQuery ? "No conversations found" : "No conversations yet"}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-0.5">
-                    {filteredConversations.map((conv) => {
-                      const avatarColor = getAvatarColor(conv.restaurantName);
-                      const isActive = activeConversation === conv.id;
-                      return (
-                        <button
-                          key={conv.id}
-                          onClick={() => setActiveConversation(conv.id)}
-                          className={cn(
-                            "w-full text-left px-3 py-3 rounded-xl transition-all duration-150 flex items-center gap-3",
-                            isActive
-                              ? "bg-tertiary/5 border-l-2 border-tertiary"
-                              : "hover:bg-surface-container border-l-2 border-transparent"
-                          )}
-                        >
-                          {/* Avatar */}
-                          <div
-                            className={cn(
-                              "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                              avatarColor
-                            )}
-                          >
-                            <span className="text-sm font-semibold">
-                              {conv.restaurantName.charAt(0)}
+          {/* Search */}
+          <div className="px-4 pb-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant/50" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search conversations…"
+                className="pl-9 rounded-xl bg-surface-container border-0 h-9 text-sm placeholder:text-on-surface-variant/50"
+              />
+            </div>
+          </div>
+
+          <ScrollArea className="flex-1">
+            <div className="px-2 pb-2">
+              {loading ? (
+                <div className="flex items-center justify-center py-10">
+                  <div className="w-5 h-5 border-2 border-tertiary/30 border-t-tertiary rounded-full animate-spin" />
+                </div>
+              ) : filteredConversations.length === 0 ? (
+                <div className="text-center py-12 px-4">
+                  <MessageSquare className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
+                  <p className="text-sm text-on-surface-variant">
+                    {searchQuery ? "No conversations found" : "No conversations yet"}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-0.5">
+                  {filteredConversations.map((conv) => {
+                    const avatarColor = getAvatarColor(convoDisplayName(conv));
+                    const isActive = activeConversation === conv.id;
+                    return (
+                      <button
+                        key={conv.id}
+                        onClick={() => setActiveConversation(conv.id)}
+                        className={cn(
+                          "w-full text-left px-3 py-3 rounded-xl transition-all duration-150 flex items-center gap-3",
+                          isActive
+                            ? "bg-tertiary/5 border-l-2 border-tertiary"
+                            : "hover:bg-surface-container border-l-2 border-transparent"
+                        )}
+                      >
+                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0", avatarColor)}>
+                          <span className="text-sm font-semibold">{convoDisplayName(conv).charAt(0)}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className={cn(
+                              "text-sm truncate",
+                              conv.unreadCount > 0 ? "font-semibold text-on-surface" : "font-medium text-on-surface"
+                            )}>
+                              {convoDisplayName(conv)}
                             </span>
-                          </div>
-
-                          {/* Content */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <span
-                                className={cn(
-                                  "text-sm truncate",
-                                  conv.unreadCount > 0
-                                    ? "font-semibold text-on-surface"
-                                    : "font-medium text-on-surface"
-                                )}
-                              >
-                                {conv.restaurantName}
+                            {conv.lastMessage && (
+                              <span className="text-[11px] text-on-surface-variant/70 shrink-0 ml-2">
+                                {formatConvoTime(conv.lastMessage.createdAt)}
                               </span>
-                              <div className="flex items-center gap-2 shrink-0 ml-2">
-                                {conv.lastMessage && (
-                                  <span className="text-[11px] text-on-surface-variant/70">
-                                    {formatConvoTime(conv.lastMessage.createdAt)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between mt-0.5">
-                              {conv.lastMessage ? (
-                                <p
-                                  className={cn(
-                                    "text-xs truncate",
-                                    conv.unreadCount > 0
-                                      ? "text-on-surface-variant font-medium"
-                                      : "text-on-surface-variant/60"
-                                  )}
-                                >
-                                  {conv.lastMessage.content}
-                                </p>
-                              ) : (
-                                <p className="text-xs text-on-surface-variant/40 italic">
-                                  No messages yet
-                                </p>
-                              )}
-                              {conv.unreadCount > 0 && (
-                                <span className="w-2.5 h-2.5 rounded-full bg-tertiary shrink-0 ml-2" />
-                              )}
-                            </div>
+                            )}
                           </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </Card>
-        )}
+                          <div className="flex items-center justify-between mt-0.5">
+                            {conv.lastMessage ? (
+                              <p className={cn(
+                                "text-xs truncate",
+                                conv.unreadCount > 0 ? "text-on-surface-variant font-medium" : "text-on-surface-variant/60"
+                              )}>
+                                {conv.lastMessage.content}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-on-surface-variant/40 italic">No messages yet</p>
+                            )}
+                            {conv.unreadCount > 0 && (
+                              <span className="w-2.5 h-2.5 rounded-full bg-tertiary shrink-0 ml-2" />
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </Card>
 
-        {/* Right panel - Chat window */}
-        <Card
-          className={cn(
-            "flex-1 flex flex-col overflow-hidden rounded-2xl border-0 shadow-sm",
-            !isRestaurant && "rounded-l-none"
-          )}
-        >
+        {/* ── Chat window ── */}
+        <Card className={cn(
+          "flex-1 flex flex-col overflow-hidden rounded-2xl md:rounded-l-none border-0 shadow-sm",
+          showChatOnMobile ? "flex" : "hidden md:flex"
+        )}>
           {!activeConversation ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-4">
               <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center">
@@ -357,72 +325,41 @@ export default function MessagesPage() {
           ) : (
             <>
               {/* Chat header */}
-              <div className="px-5 py-3 border-b border-outline-variant/10 flex items-center justify-between bg-surface-lowest">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center",
-                      getAvatarColor(chatPartnerName || "?")
-                    )}
-                  >
-                    <span className="text-sm font-semibold">
-                      {chatPartnerName?.charAt(0) || "?"}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-on-surface">
-                      {chatPartnerName}
-                    </p>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span className="text-[11px] font-medium text-emerald-600 uppercase tracking-wide">
-                        Active now
-                      </span>
-                    </div>
-                  </div>
+              <div className="px-4 md:px-5 py-3 border-b border-outline-variant/10 flex items-center gap-3 bg-surface-lowest">
+                {/* Back button on mobile */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden w-8 h-8 text-on-surface-variant shrink-0"
+                  onClick={() => setActiveConversation(null)}
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+                <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0", getAvatarColor(chatPartnerName || "?"))}>
+                  <span className="text-sm font-semibold">{chatPartnerName?.charAt(0) || "?"}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-9 h-9 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl"
-                  >
-                    <Phone className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-9 h-9 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl"
-                  >
-                    <Video className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-9 h-9 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl"
-                  >
-                    <Info className="w-4 h-4" />
-                  </Button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-on-surface truncate">{chatPartnerName}</p>
+                  <p className="text-[11px] text-on-surface-variant/60">
+                    {isRestaurant ? "Warehouse" : "Restaurant"}
+                  </p>
                 </div>
               </div>
 
               {/* Messages area */}
-              <ScrollArea className="flex-1 px-5 py-4">
+              <ScrollArea className="flex-1 px-4 md:px-5 py-4">
                 <div className="space-y-1">
                   {messages.length === 0 && (
                     <div className="text-center py-16">
                       <div className="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center mx-auto mb-3">
                         <MessageSquare className="w-6 h-6 text-on-surface-variant/30" />
                       </div>
-                      <p className="text-sm text-on-surface-variant">
-                        No messages yet. Say hello!
-                      </p>
+                      <p className="text-sm text-on-surface-variant">No messages yet. Say hello!</p>
                     </div>
                   )}
 
                   {messageGroups.map((group) => (
                     <div key={group.label}>
-                      {/* Day separator */}
                       <div className="flex items-center gap-3 my-5">
                         <div className="flex-1 h-px bg-outline-variant/15" />
                         <span className="text-[11px] font-medium text-on-surface-variant uppercase tracking-wider">
@@ -430,8 +367,6 @@ export default function MessagesPage() {
                         </span>
                         <div className="flex-1 h-px bg-outline-variant/15" />
                       </div>
-
-                      {/* Messages in this group */}
                       <div className="space-y-3">
                         {group.messages.map((msg) => {
                           const isOwn = msg.sender.id === session?.user?.id;
@@ -439,18 +374,16 @@ export default function MessagesPage() {
                             <div
                               key={msg.id}
                               className={cn(
-                                "flex flex-col max-w-[70%]",
-                                isOwn ? "ml-auto items-end" : "items-start"
+                                "flex flex-col",
+                                isOwn ? "ml-auto items-end max-w-[85%] sm:max-w-[70%]" : "items-start max-w-[85%] sm:max-w-[70%]"
                               )}
                             >
-                              <div
-                                className={cn(
-                                  "px-4 py-2.5 text-sm leading-relaxed",
-                                  isOwn
-                                    ? "bg-tertiary text-white rounded-2xl rounded-br-sm"
-                                    : "bg-surface-container text-on-surface rounded-2xl rounded-bl-sm"
-                                )}
-                              >
+                              <div className={cn(
+                                "px-4 py-2.5 text-sm leading-relaxed",
+                                isOwn
+                                  ? "bg-tertiary text-white rounded-2xl rounded-br-sm"
+                                  : "bg-surface-container text-on-surface rounded-2xl rounded-bl-sm"
+                              )}>
                                 {msg.content}
                               </div>
                               <span className="text-[10px] text-on-surface-variant/50 mt-1 px-1">
@@ -467,37 +400,23 @@ export default function MessagesPage() {
               </ScrollArea>
 
               {/* Message input */}
-              <div className="px-4 py-3 border-t border-outline-variant/10 bg-surface-lowest">
+              <div className="px-3 md:px-4 py-3 border-t border-outline-variant/10 bg-surface-lowest">
                 <form onSubmit={handleSend} className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="w-9 h-9 text-on-surface-variant/50 hover:text-on-surface-variant hover:bg-surface-container rounded-xl shrink-0"
-                  >
-                    <Paperclip className="w-4.5 h-4.5" />
-                  </Button>
-                  <div className="flex-1 relative">
+                  <div className="flex-1">
                     <Input
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type a message..."
+                      placeholder="Type a message…"
                       disabled={sending}
                       autoFocus
-                      className="rounded-xl bg-surface-container border-0 pr-10 h-10 text-sm placeholder:text-on-surface-variant/40"
+                      className="rounded-xl bg-surface-container border-0 h-10 text-sm placeholder:text-on-surface-variant/40"
                     />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/40 hover:text-on-surface-variant transition-colors"
-                    >
-                      <Smile className="w-4.5 h-4.5" />
-                    </button>
                   </div>
                   <Button
                     type="submit"
                     size="icon"
                     disabled={sending || !newMessage.trim()}
-                    className="bg-tertiary hover:bg-tertiary-dim text-on-tertiary shrink-0 rounded-xl w-10 h-10 disabled:opacity-40"
+                    className="bg-tertiary hover:bg-tertiary/90 text-white shrink-0 rounded-xl w-10 h-10 disabled:opacity-40"
                   >
                     <Send className="w-4 h-4" />
                   </Button>
