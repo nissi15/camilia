@@ -17,6 +17,7 @@ import {
   Network, LayoutGrid, AlignJustify,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Category {
   id: string;
@@ -103,6 +104,7 @@ export default function CategoriesPage() {
       return;
     }
     setDialogOpen(false);
+    toast.success(editId ? "Category updated" : "Category created");
     fetchCategories();
   }
 
@@ -110,9 +112,10 @@ export default function CategoriesPage() {
     const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
     if (!res.ok) {
       const data = await res.json();
-      alert(data.error || "Cannot delete");
+      toast.error(data.error || "Cannot delete category");
       return;
     }
+    toast.success("Category deleted");
     fetchCategories();
   }
 
