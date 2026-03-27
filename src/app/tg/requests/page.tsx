@@ -33,11 +33,21 @@ export default function RequestsPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchRequests = useCallback(async () => {
-    const statusParam = tab === "pending" ? "PENDING" : tab === "active" ? "PACKING,DISPATCHED" : "ALL";
-    const res = await apiFetch(`/api/requests?status=${statusParam}&limit=50`);
-    if (res.ok) {
-      const data = await res.json();
-      setRequests(data.requests);
+    const statusParam = tab === "pending" ? "PENDING" : tab === "active" ? "PACKING,DISPATCHED" : "";
+    const url = statusParam
+      ? `/api/requests?status=${statusParam}&limit=50`
+      : `/api/requests?limit=50`;
+    try {
+      const res = await apiFetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        const list = data?.requests;
+        setRequests(Array.isArray(list) ? list : []);
+      } else {
+        setRequests([]);
+      }
+    } catch {
+      setRequests([]);
     }
     setLoading(false);
   }, [apiFetch, tab]);
@@ -123,7 +133,7 @@ export default function RequestsPage() {
                       <span className={`text-xs font-medium ${config.color}`}>{req.status}</span>
                     </div>
                     <p className="text-xs text-gray-500 truncate">
-                      {req.restaurant.name} • {req._count.items} items
+                      {req.restaurant?.name || "Unknown"} • {req._count?.items ?? 0} items
                     </p>
                   </div>
                   <ChevronRight className={`w-4 h-4 text-gray-300 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
@@ -134,7 +144,7 @@ export default function RequestsPage() {
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div>
                         <span className="text-gray-400">Requested by</span>
-                        <p className="font-medium text-gray-700">{req.requester.name}</p>
+                        <p className="font-medium text-gray-700">{req.requester?.name || "Unknown"}</p>
                       </div>
                       <div>
                         <span className="text-gray-400">Priority</span>

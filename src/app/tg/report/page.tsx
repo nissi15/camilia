@@ -39,9 +39,10 @@ export default function ReportPage() {
       if (wasteRes.ok) wasteData = await wasteRes.json();
 
       // Build summary from dashboard data
-      const received = dashData?.recentItems?.filter((i: { status: string }) => i.status === "RECEIVED") || [];
-      const processed = dashData?.recentItems?.filter((i: { status: string }) => i.status === "PROCESSED") || [];
-      const waste = dashData?.recentItems?.filter((i: { status: string }) => i.status === "WASTE") || [];
+      const recentItems = Array.isArray(dashData?.recentItems) ? dashData.recentItems : [];
+      const received = recentItems.filter((i: { status: string }) => i.status === "RECEIVED");
+      const processed = recentItems.filter((i: { status: string }) => i.status === "PROCESSED");
+      const waste = recentItems.filter((i: { status: string }) => i.status === "WASTE");
 
       const receivedWeight = received.reduce((s: number, i: { weightGrams: number }) => s + Number(i.weightGrams || 0), 0);
       const processedWeight = processed.reduce((s: number, i: { weightGrams: number }) => s + Number(i.weightGrams || 0), 0);
@@ -61,8 +62,9 @@ export default function ReportPage() {
       });
 
       // Top wasted items
-      if (wasteData?.wasteByCategory) {
-        const topItems = wasteData.wasteByCategory
+      const wasteByCategory = Array.isArray(wasteData?.wasteByCategory) ? wasteData.wasteByCategory : [];
+      if (wasteByCategory.length > 0) {
+        const topItems = wasteByCategory
           .sort((a: { totalWeight: number }, b: { totalWeight: number }) => b.totalWeight - a.totalWeight)
           .slice(0, 3)
           .map((c: { categoryName: string; totalWeight: number }) => ({

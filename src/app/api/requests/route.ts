@@ -10,43 +10,51 @@ export async function GET(req: NextRequest) {
   const { error, user } = await requireDualAuth(req);
   if (error) return error;
 
-  const searchParams = req.nextUrl.searchParams;
-  const status = searchParams.get("status");
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  try {
+    const searchParams = req.nextUrl.searchParams;
+    const status = searchParams.get("status");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
 
-  const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = {};
 
-  // Restaurant staff only sees their own requests
-  if (user!.role === "RESTAURANT_STAFF") {
-    where.restaurantId = user!.locationId;
+    // Restaurant staff only sees their own requests
+    if (user!.role === "RESTAURANT_STAFF") {
+      where.restaurantId = user!.locationId;
+    }
+
+    if (status && status !== "ALL") {
+      const statuses = status.split(",").map((s) => s.trim()).filter(Boolean);
+      if (statuses.length > 0) {
+        where.status = statuses.length > 1 ? { in: statuses } : statuses[0];
+      }
+    }
+
+    const [requests, total] = await Promise.all([
+      prisma.request.findMany({
+        where,
+        include: {
+          restaurant: true,
+          requester: { select: { id: true, name: true, email: true, role: true } },
+          _count: { select: { items: true } },
+        },
+        orderBy: { requestedAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.request.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      requests,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (err) {
+    console.error("GET /api/requests error:", err);
+    return NextResponse.json({ requests: [], total: 0, page: 1, totalPages: 0 }, { status: 500 });
   }
-
-  if (status && status !== "ALL") {
-    where.status = status;
-  }
-
-  const [requests, total] = await Promise.all([
-    prisma.request.findMany({
-      where,
-      include: {
-        restaurant: true,
-        requester: true,
-        _count: { select: { items: true } },
-      },
-      orderBy: { requestedAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.request.count({ where }),
-  ]);
-
-  return NextResponse.json({
-    requests,
-    total,
-    page,
-    totalPages: Math.ceil(total / limit),
-  });
 }
 
 export async function POST(req: Request) {

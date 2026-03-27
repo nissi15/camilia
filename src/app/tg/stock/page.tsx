@@ -28,8 +28,8 @@ export default function StockPage() {
 
   useEffect(() => {
     apiFetch("/api/stock/levels")
-      .then((r) => r.json())
-      .then((data) => { setLevels(data); setLoading(false); })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => { setLevels(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, [apiFetch]);
 
@@ -41,10 +41,15 @@ export default function StockPage() {
     setExpandedId(categoryId);
 
     if (!itemDetails[categoryId]) {
-      const res = await apiFetch(`/api/inventory?categoryId=${categoryId}&status=RECEIVED,PROCESSED,PACKAGED&limit=50`);
-      if (res.ok) {
-        const data = await res.json();
-        setItemDetails((prev) => ({ ...prev, [categoryId]: data.items || [] }));
+      try {
+        const res = await apiFetch(`/api/inventory?categoryId=${categoryId}&status=RECEIVED,PROCESSED,PACKAGED&limit=50`);
+        if (res.ok) {
+          const data = await res.json();
+          const list = data?.items;
+          setItemDetails((prev) => ({ ...prev, [categoryId]: Array.isArray(list) ? list : [] }));
+        }
+      } catch {
+        // ignore
       }
     }
   };

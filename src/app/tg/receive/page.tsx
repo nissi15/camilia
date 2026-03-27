@@ -38,8 +38,8 @@ export default function ReceivePage() {
   });
 
   useEffect(() => {
-    apiFetch("/api/categories/flat").then((r) => r.json()).then(setCategories).catch(() => {});
-    apiFetch("/api/suppliers").then((r) => r.json()).then(setSuppliers).catch(() => {});
+    apiFetch("/api/categories/flat").then((r) => r.ok ? r.json() : []).then((d) => setCategories(Array.isArray(d) ? d : [])).catch(() => {});
+    apiFetch("/api/suppliers").then((r) => r.ok ? r.json() : []).then((d) => setSuppliers(Array.isArray(d) ? d : [])).catch(() => {});
   }, [apiFetch]);
 
   const handleSubmit = async (e: React.FormEvent) => {

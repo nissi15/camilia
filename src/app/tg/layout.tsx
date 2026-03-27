@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { TelegramProvider } from "./providers";
 import { BottomNav } from "@/components/telegram/bottom-nav";
 import { AccessGate } from "@/components/telegram/access-gate";
+import { TgErrorBoundary } from "@/components/telegram/error-boundary";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -22,9 +23,11 @@ export default function TelegramLayout({ children }: { children: React.ReactNode
       <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
       <TelegramProvider>
         <AccessGate>
-          <div className="min-h-screen bg-gray-50 pb-20">
-            {children}
-          </div>
+          <TgErrorBoundary fallbackMessage="Could not load this page. Tap retry to refresh.">
+            <div className="min-h-screen bg-gray-50 pb-20">
+              {children}
+            </div>
+          </TgErrorBoundary>
           <BottomNav />
         </AccessGate>
       </TelegramProvider>

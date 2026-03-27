@@ -41,17 +41,21 @@ export default function ProcessPage() {
 
   useEffect(() => {
     apiFetch("/api/inventory?status=RECEIVED,PROCESSED&limit=100")
-      .then((r) => r.json())
-      .then((data) => setItems(data.items || []))
+      .then((r) => r.ok ? r.json() : { items: [] })
+      .then((data) => {
+        const list = data?.items;
+        setItems(Array.isArray(list) ? list : []);
+      })
       .catch(() => {});
   }, [apiFetch]);
 
   useEffect(() => {
     if (!selectedItem) return;
     apiFetch(`/api/yield-targets?categoryId=${selectedItem.category.id}`)
-      .then((r) => r.json())
-      .then((targets: Array<{ stepType: string; targetPercent: number }>) => {
-        const match = targets.find((t: { stepType: string }) => t.stepType === stepType);
+      .then((r) => r.ok ? r.json() : [])
+      .then((targets) => {
+        const arr = Array.isArray(targets) ? targets : [];
+        const match = arr.find((t: { stepType: string }) => t.stepType === stepType);
         setYieldTarget(match ? Number(match.targetPercent) : null);
       })
       .catch(() => setYieldTarget(null));
@@ -107,7 +111,7 @@ export default function ProcessPage() {
       setSuccess(true);
       // Refresh items list
       apiFetch("/api/inventory?status=RECEIVED,PROCESSED&limit=100")
-        .then((r) => r.json())
+        .then((r) => r.ok ? r.json() : { items: [] })
         .then((d) => setItems(d.items || []))
         .catch(() => {});
     }
