@@ -81,7 +81,7 @@ function WarehouseLoginForm() {
               <h1 className="text-xl font-heading font-bold text-white">
                 Warehouse Portal
               </h1>
-              <p className="text-[11px] font-mono text-[#6B7280] mt-1 uppercase tracking-wider">
+              <p className="text-[11px] font-mono text-[#9CA3AF] mt-1 uppercase tracking-wider">
                 Central warehouse management & operations
               </p>
             </div>
@@ -97,7 +97,7 @@ function WarehouseLoginForm() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="email" className="text-[11px] font-mono font-medium text-[#6B7280] uppercase tracking-wider">
+                <label htmlFor="email" className="text-[11px] font-mono font-medium text-[#9CA3AF] uppercase tracking-wider">
                   Email
                 </label>
                 <input
@@ -108,11 +108,11 @@ function WarehouseLoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoFocus
-                  className="w-full h-11 px-4 rounded-xl bg-[#0A0A0A] border border-[#1A1A1A] text-white text-sm placeholder:text-[#3A3A3A] focus:outline-none focus:border-[#0055d7]/50 focus:ring-1 focus:ring-[#0055d7]/20 transition-all duration-200"
+                  className="w-full h-11 px-4 rounded-xl bg-[#111111] border border-[#2A2A2A] text-white text-sm placeholder:text-[#555555] focus:outline-none focus:border-[#0055d7]/50 focus:ring-1 focus:ring-[#0055d7]/20 transition-all duration-200"
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="password" className="text-[11px] font-mono font-medium text-[#6B7280] uppercase tracking-wider">
+                <label htmlFor="password" className="text-[11px] font-mono font-medium text-[#9CA3AF] uppercase tracking-wider">
                   Password
                 </label>
                 <input
@@ -122,7 +122,7 @@ function WarehouseLoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full h-11 px-4 rounded-xl bg-[#0A0A0A] border border-[#1A1A1A] text-white text-sm placeholder:text-[#3A3A3A] focus:outline-none focus:border-[#0055d7]/50 focus:ring-1 focus:ring-[#0055d7]/20 transition-all duration-200"
+                  className="w-full h-11 px-4 rounded-xl bg-[#111111] border border-[#2A2A2A] text-white text-sm placeholder:text-[#555555] focus:outline-none focus:border-[#0055d7]/50 focus:ring-1 focus:ring-[#0055d7]/20 transition-all duration-200"
                 />
               </div>
             </div>
@@ -136,9 +136,9 @@ function WarehouseLoginForm() {
             </button>
 
             <div className="text-center space-y-1 pt-1">
-              <p className="text-[10px] font-mono text-[#3A3A3A] uppercase tracking-wider">Demo credentials</p>
-              <p className="text-[11px] font-mono text-[#6B7280]">
-                <span className="text-white/60">admin@stocktrace.com</span>{" "}
+              <p className="text-[10px] font-mono text-[#6B7280] uppercase tracking-wider">Demo credentials</p>
+              <p className="text-[11px] font-mono text-[#9CA3AF]">
+                <span className="text-white/80">admin@stocktrace.com</span>{" "}
                 / admin123
               </p>
             </div>
@@ -148,7 +148,7 @@ function WarehouseLoginForm() {
 
       {/* Bottom bar */}
       <div className="relative z-10 text-center pb-6">
-        <p className="text-[11px] font-mono text-[#3A3A3A]">
+        <p className="text-[11px] font-mono text-[#6B7280]">
           &copy; {new Date().getFullYear()} StockTrace
         </p>
       </div>

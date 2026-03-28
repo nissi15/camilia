@@ -36,7 +36,7 @@ function LoginChoice() {
 
         <Link
           href="/"
-          className="text-[12px] font-mono font-medium text-[#6B7280] hover:text-white transition-colors duration-200 uppercase tracking-wider"
+          className="text-[12px] font-mono font-medium text-[#9CA3AF] hover:text-white transition-colors duration-200 uppercase tracking-wider"
         >
           Back to Home
         </Link>
@@ -49,14 +49,14 @@ function LoginChoice() {
           <div className="text-center space-y-3">
             <div className="flex items-center justify-center gap-2 mb-4">
               <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-              <span className="text-[11px] font-mono font-medium text-[#6B7280] uppercase tracking-[0.15em]">
+              <span className="text-[11px] font-mono font-medium text-[#9CA3AF] uppercase tracking-[0.15em]">
                 Select Portal
               </span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-heading font-black text-white tracking-[-0.03em]">
               Welcome back
             </h1>
-            <p className="text-[13px] font-mono text-[#6B7280] max-w-sm mx-auto leading-relaxed">
+            <p className="text-[14px] font-mono text-[#9CA3AF] max-w-sm mx-auto leading-relaxed">
               Choose your portal to access the dashboard
             </p>
           </div>
@@ -65,15 +65,15 @@ function LoginChoice() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Warehouse card */}
             <Link href={`/login/warehouse${qs}`} className="group">
-              <div className="relative rounded-2xl border border-[#1A1A1A] bg-[#0A0A0A] p-8 transition-all duration-300 hover:border-[#E8532E]/30 hover:bg-[#0D0D0D] cursor-pointer h-full flex flex-col items-center text-center space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-[#0055d7]/10 border border-[#0055d7]/20 flex items-center justify-center group-hover:bg-[#0055d7]/15 group-hover:border-[#0055d7]/30 transition-all duration-300">
+              <div className="relative rounded-2xl border border-[#2A2A2A] bg-[#111111] p-8 transition-all duration-300 hover:border-[#E8532E]/40 hover:bg-[#161616] cursor-pointer h-full flex flex-col items-center text-center space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-[#0055d7]/15 border border-[#0055d7]/25 flex items-center justify-center group-hover:bg-[#0055d7]/20 group-hover:border-[#0055d7]/40 transition-all duration-300">
                   <Warehouse className="w-6 h-6 text-[#3B82F6]" />
                 </div>
                 <div className="space-y-1.5">
                   <h2 className="text-base font-heading font-bold text-white">
                     Warehouse
                   </h2>
-                  <p className="text-[11px] font-mono text-[#6B7280] leading-relaxed">
+                  <p className="text-[12px] font-mono text-[#9CA3AF] leading-relaxed">
                     Central warehouse management & operations
                   </p>
                 </div>
@@ -85,15 +85,15 @@ function LoginChoice() {
 
             {/* Restaurant card */}
             <Link href={`/login/restaurant${qs}`} className="group">
-              <div className="relative rounded-2xl border border-[#1A1A1A] bg-[#0A0A0A] p-8 transition-all duration-300 hover:border-[#E8532E]/30 hover:bg-[#0D0D0D] cursor-pointer h-full flex flex-col items-center text-center space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-600/10 border border-emerald-600/20 flex items-center justify-center group-hover:bg-emerald-600/15 group-hover:border-emerald-600/30 transition-all duration-300">
+              <div className="relative rounded-2xl border border-[#2A2A2A] bg-[#111111] p-8 transition-all duration-300 hover:border-[#E8532E]/40 hover:bg-[#161616] cursor-pointer h-full flex flex-col items-center text-center space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-600/15 border border-emerald-600/25 flex items-center justify-center group-hover:bg-emerald-600/20 group-hover:border-emerald-600/40 transition-all duration-300">
                   <ChefHat className="w-6 h-6 text-emerald-500" />
                 </div>
                 <div className="space-y-1.5">
                   <h2 className="text-base font-heading font-bold text-white">
                     Restaurant
                   </h2>
-                  <p className="text-[11px] font-mono text-[#6B7280] leading-relaxed">
+                  <p className="text-[12px] font-mono text-[#9CA3AF] leading-relaxed">
                     Stock requisition & order tracking
                   </p>
                 </div>
@@ -108,7 +108,7 @@ function LoginChoice() {
 
       {/* Bottom bar */}
       <div className="relative z-10 text-center pb-6">
-        <p className="text-[11px] font-mono text-[#3A3A3A]">
+        <p className="text-[11px] font-mono text-[#6B7280]">
           &copy; {new Date().getFullYear()} StockTrace
         </p>
       </div>
