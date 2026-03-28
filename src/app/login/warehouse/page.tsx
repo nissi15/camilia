@@ -5,10 +5,6 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Warehouse, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function WarehouseLoginPage() {
   return (
@@ -49,85 +45,113 @@ function WarehouseLoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface px-4">
-      <Card className="w-full max-w-sm rounded-xl border border-outline-variant/15 shadow-sm">
-        <CardHeader className="text-center space-y-3 pb-0 pt-8">
-          <div className="mx-auto w-11 h-11 rounded-xl bg-[#0055d7]/10 flex items-center justify-center">
-            <Warehouse className="w-5 h-5 text-[#0055d7]" />
+    <div className="min-h-screen bg-[#050505] flex flex-col relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#0055d7]/[0.04] rounded-full blur-[120px]" />
+
+      {/* Navbar */}
+      <nav className="relative z-20 flex items-center justify-between px-6 sm:px-10 lg:px-16 py-5 max-w-[1280px] mx-auto w-full">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[#E8532E] flex items-center justify-center">
+            <Warehouse className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <h1 className="text-lg font-heading font-semibold text-on-surface">
-              Warehouse Portal
-            </h1>
-            <p className="text-xs text-on-surface-variant mt-1">
-              Central warehouse management & operations
-            </p>
+          <span className="text-[17px] font-heading font-bold text-white tracking-[-0.02em]">
+            StockTrace
+          </span>
+        </Link>
+
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-1.5 text-[12px] font-mono font-medium text-[#6B7280] hover:text-white transition-colors duration-200 uppercase tracking-wider"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back
+        </Link>
+      </nav>
+
+      {/* Main content */}
+      <div className="relative z-10 flex-1 flex items-center justify-center px-6 pb-16">
+        <div className="w-full max-w-sm space-y-8">
+          {/* Header */}
+          <div className="text-center space-y-3">
+            <div className="mx-auto w-14 h-14 rounded-2xl bg-[#0055d7]/10 border border-[#0055d7]/20 flex items-center justify-center">
+              <Warehouse className="w-6 h-6 text-[#3B82F6]" />
+            </div>
+            <div>
+              <h1 className="text-xl font-heading font-bold text-white">
+                Warehouse Portal
+              </h1>
+              <p className="text-[11px] font-mono text-[#6B7280] mt-1 uppercase tracking-wider">
+                Central warehouse management & operations
+              </p>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent className="pt-6 pb-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="p-2.5 rounded-lg bg-error/10 text-error text-xs font-medium">
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono text-center">
                 {error}
               </div>
             )}
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-on-surface text-xs font-medium">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoFocus
-                className="rounded-lg h-9"
-              />
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-[11px] font-mono font-medium text-[#6B7280] uppercase tracking-wider">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                  className="w-full h-11 px-4 rounded-xl bg-[#0A0A0A] border border-[#1A1A1A] text-white text-sm placeholder:text-[#3A3A3A] focus:outline-none focus:border-[#0055d7]/50 focus:ring-1 focus:ring-[#0055d7]/20 transition-all duration-200"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="password" className="text-[11px] font-mono font-medium text-[#6B7280] uppercase tracking-wider">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full h-11 px-4 rounded-xl bg-[#0A0A0A] border border-[#1A1A1A] text-white text-sm placeholder:text-[#3A3A3A] focus:outline-none focus:border-[#0055d7]/50 focus:ring-1 focus:ring-[#0055d7]/20 transition-all duration-200"
+                />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-on-surface text-xs font-medium">
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="rounded-lg h-9"
-              />
-            </div>
-            <Button
+
+            <button
               type="submit"
-              className="w-full rounded-lg h-9 text-sm font-medium bg-tertiary hover:bg-tertiary/90 text-white"
               disabled={loading}
+              className="w-full h-11 rounded-xl bg-[#E8532E] text-white font-mono font-semibold text-[12px] uppercase tracking-wider hover:bg-[#FF6B42] transition-all duration-200 shadow-lg shadow-[#E8532E]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Signing in..." : "Sign in"}
-            </Button>
+            </button>
 
-            <div className="text-[11px] text-on-surface-variant text-center pt-1 space-y-0.5">
-              <p>Demo credentials:</p>
-              <p>
-                <span className="font-medium text-on-surface">admin@stocktrace.com</span>{" "}
+            <div className="text-center space-y-1 pt-1">
+              <p className="text-[10px] font-mono text-[#3A3A3A] uppercase tracking-wider">Demo credentials</p>
+              <p className="text-[11px] font-mono text-[#6B7280]">
+                <span className="text-white/60">admin@stocktrace.com</span>{" "}
                 / admin123
               </p>
             </div>
-
-            <div className="text-center pt-1">
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-on-surface transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Back to login
-              </Link>
-            </div>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Bottom bar */}
+      <div className="relative z-10 text-center pb-6">
+        <p className="text-[11px] font-mono text-[#3A3A3A]">
+          &copy; {new Date().getFullYear()} StockTrace
+        </p>
+      </div>
     </div>
   );
 }
