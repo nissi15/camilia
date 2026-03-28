@@ -99,7 +99,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
           onClick={onClose}
         />
       )}
@@ -111,27 +111,27 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         )}
       >
         {/* Logo area */}
-        <div className="flex items-center justify-between h-[60px] px-5">
+        <div className="flex items-center justify-between h-14 px-5">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-tertiary to-tertiary/80 flex items-center justify-center shadow-lg shadow-tertiary/20">
-              <Warehouse className="w-[18px] h-[18px] text-white" />
+            <div className="w-8 h-8 rounded-lg bg-tertiary flex items-center justify-center">
+              <Warehouse className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="font-heading font-bold text-[17px] text-white block leading-tight">
+              <span className="font-heading font-bold text-[15px] text-white block leading-tight">
                 StockTrace
               </span>
-              <span className="text-[11px] font-medium text-sidebar-dark-text/80 tracking-widest uppercase">
+              <span className="text-[10px] font-medium text-white/50 tracking-widest uppercase">
                 {isWarehouse ? "Warehouse" : "Restaurant"}
               </span>
             </div>
           </Link>
-          <button onClick={onClose} className="lg:hidden p-1.5 hover:bg-sidebar-dark-hover rounded-lg transition-colors">
-            <X className="w-5 h-5 text-sidebar-dark-text" />
+          <button onClick={onClose} className="lg:hidden p-1.5 hover:bg-white/5 rounded-lg transition-colors">
+            <X className="w-4 h-4 text-white/60" />
           </button>
         </div>
 
         {/* Separator */}
-        <div className="mx-5 h-px bg-sidebar-dark-border/50" />
+        <div className="mx-5 h-px bg-white/[0.06]" />
 
         {/* Navigation */}
         <nav className="flex-1 px-3 pt-4 pb-2 overflow-y-auto">
@@ -144,8 +144,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 {/* Section label */}
                 {item.section && (
                   <p className={cn(
-                    "text-[11px] font-semibold tracking-[0.15em] text-sidebar-dark-text/60 uppercase px-3",
-                    i === 0 ? "mb-2" : "mt-5 mb-2"
+                    "text-[11px] font-semibold tracking-[0.15em] text-white/30 uppercase px-3",
+                    i === 0 ? "mb-1.5" : "mt-5 mb-1.5"
                   )}>
                     {item.section}
                   </p>
@@ -154,15 +154,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   href={item.href}
                   onClick={onClose}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-[10px] rounded-xl text-[14px] font-medium transition-all duration-150",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] font-medium transition-all duration-150",
                     isActive
-                      ? "bg-tertiary/15 text-tertiary"
-                      : "text-sidebar-dark-text hover:bg-sidebar-dark-hover hover:text-sidebar-dark-text-active"
+                      ? "bg-white/[0.08] text-white"
+                      : "text-white/60 hover:bg-white/[0.04] hover:text-white/80"
                   )}
                 >
                   <item.icon className={cn(
-                    "w-[19px] h-[19px] shrink-0",
-                    isActive ? "text-tertiary" : "text-sidebar-dark-text/90"
+                    "w-[18px] h-[18px] shrink-0",
+                    isActive ? "text-tertiary" : "text-white/40"
                   )} />
                   <span className="flex-1">{item.label}</span>
                   {badgeCount > 0 && (
@@ -181,17 +181,17 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* User info */}
         <div className="p-3">
-          <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-sidebar-dark-hover/50">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-tertiary/20 to-tertiary/10 flex items-center justify-center">
-              <span className="text-xs font-bold text-tertiary">
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/[0.04]">
+            <div className="w-7 h-7 rounded-md bg-tertiary/15 flex items-center justify-center">
+              <span className="text-[11px] font-semibold text-tertiary">
                 {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-medium text-sidebar-dark-text-active truncate leading-tight">
+              <p className="text-[13px] font-medium text-white/90 truncate leading-tight">
                 {session?.user?.name}
               </p>
-              <p className="text-[12px] text-sidebar-dark-text/70 truncate leading-tight mt-0.5">
+              <p className="text-[11px] text-white/40 truncate leading-tight mt-0.5">
                 {isWarehouse ? "Warehouse Admin" : "Restaurant Staff"}
               </p>
             </div>

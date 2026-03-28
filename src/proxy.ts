@@ -8,7 +8,7 @@ const restaurantRoutes = ["/my-dashboard", "/my-requests", "/new-request"];
 const sharedRoutes = ["/messages", "/notifications", "/settings"];
 const publicRoutes = ["/login"];
 
-export default auth((req) => {
+export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
 
   // Allow public routes and static assets
@@ -23,6 +23,16 @@ export default auth((req) => {
 
   // Allow static uploads
   if (pathname.startsWith("/uploads")) return;
+
+  // Root: unauthenticated → landing page, authenticated → redirect by role
+  if (pathname === "/") {
+    if (!req.auth?.user) return;
+    const role = (req.auth.user as Record<string, unknown>).role as string;
+    if (role === "WAREHOUSE_ADMIN") {
+      return Response.redirect(new URL("/dashboard", req.url));
+    }
+    return Response.redirect(new URL("/my-dashboard", req.url));
+  }
 
   // Shared routes require auth but not a specific role
   if (sharedRoutes.some((route) => pathname.startsWith(route))) {
@@ -59,13 +69,6 @@ export default auth((req) => {
     }
   }
 
-  // Root redirect based on role
-  if (pathname === "/") {
-    if (role === "WAREHOUSE_ADMIN") {
-      return Response.redirect(new URL("/dashboard", req.url));
-    }
-    return Response.redirect(new URL("/my-dashboard", req.url));
-  }
 });
 
 export const config = {

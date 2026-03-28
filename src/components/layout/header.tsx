@@ -86,41 +86,41 @@ export function Header({ onMenuClick, title }: HeaderProps) {
 
   return (
     <>
-      <header className="h-14 bg-surface-lowest/80 backdrop-blur-md border-b border-outline-variant/20 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+      <header className="h-14 bg-surface border-b border-outline-variant/15 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden text-on-surface-variant"
+            className="lg:hidden text-on-surface-variant hover:bg-surface-container rounded-lg h-8 w-8"
             onClick={onMenuClick}
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-4.5 h-4.5" />
           </Button>
           {title && (
-            <h1 className="text-base font-semibold text-on-surface">
+            <h1 className="text-sm font-semibold text-on-surface">
               {title}
             </h1>
           )}
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <Button
             variant="ghost"
             size="icon"
-            className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl h-9 w-9"
+            className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg h-8 w-8"
             onClick={() => setSearchOpen(true)}
           >
-            <Search className="w-[18px] h-[18px]" />
+            <Search className="w-4 h-4" />
           </Button>
           <Link href="/notifications">
             <Button
               variant="ghost"
               size="icon"
-              className="relative text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl h-9 w-9"
+              className="relative text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg h-8 w-8"
             >
-              <Bell className="w-[18px] h-[18px]" />
+              <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-tertiary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-tertiary text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
@@ -130,17 +130,17 @@ export function Header({ onMenuClick, title }: HeaderProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl h-9 w-9"
+              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg h-8 w-8"
             >
-              <Settings className="w-[18px] h-[18px]" />
+              <Settings className="w-4 h-4" />
             </Button>
           </Link>
 
-          <div className="w-px h-6 bg-outline-variant/30 mx-1.5" />
+          <div className="w-px h-5 bg-outline-variant/15 mx-2" />
 
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-tertiary/10 flex items-center justify-center">
-              <span className="text-xs font-bold text-tertiary">
+            <div className="w-7 h-7 rounded-full bg-tertiary/10 flex items-center justify-center">
+              <span className="text-[11px] font-semibold text-tertiary">
                 {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
               </span>
             </div>
@@ -148,9 +148,9 @@ export function Header({ onMenuClick, title }: HeaderProps) {
               variant="ghost"
               size="sm"
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl text-xs h-8 px-2"
+              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg text-xs h-7 px-2 gap-1.5"
             >
-              <LogOut className="w-3.5 h-3.5 mr-1.5" />
+              <LogOut className="w-3.5 h-3.5" />
               Sign out
             </Button>
           </div>

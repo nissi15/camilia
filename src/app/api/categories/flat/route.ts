@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-guard";
+import { NextRequest, NextResponse } from "next/server";
+import { requireDualAuth } from "@/lib/telegram/auth-guard";
 import { prisma } from "@/lib/prisma";
 
 // Returns a flat list of all categories (useful for dropdowns)
-export async function GET() {
-  const { error } = await requireAuth();
+export async function GET(req: NextRequest) {
+  const { error } = await requireDualAuth(req);
   if (error) return error;
 
   const categories = await prisma.category.findMany({

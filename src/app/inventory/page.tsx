@@ -2,7 +2,13 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { AppShell } from "@/components/layout/app-shell";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -21,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, X } from "lucide-react";
+import { Plus, Search, Package, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { gramsToLb } from "@/lib/constants";
 
@@ -38,127 +44,95 @@ interface InventoryItem {
   location: { name: string };
 }
 
-function readURLFilters() {
-  if (typeof window === "undefined") return { q: "", status: "", category: "", page: 1 };
-  const p = new URLSearchParams(window.location.search);
-  return {
-    q: p.get("q") || "",
-    status: p.get("status") || "",
-    category: p.get("category") || "",
-    page: Math.max(1, parseInt(p.get("page") || "1") || 1),
-  };
-}
-
-function writeURLFilters(q: string, status: string, category: string, page: number) {
-  const params = new URLSearchParams();
-  if (q)        params.set("q",        q);
-  if (status)   params.set("status",   status);
-  if (category) params.set("category", category);
-  if (page > 1) params.set("page",     String(page));
-  const qs = params.toString();
-  window.history.replaceState(
-    null, "",
-    qs ? `${window.location.pathname}?${qs}` : window.location.pathname
-  );
-}
-
 export default function InventoryPage() {
-  const [items, setItems]               = useState<InventoryItem[]>([]);
-  const [total, setTotal]               = useState(0);
-  const [page, setPage]                 = useState(1);
-  const [totalPages, setTotalPages]     = useState(1);
-  const [loading, setLoading]           = useState(true);
-  const [search, setSearch]             = useState("");
+  const [items, setItems] = useState<InventoryItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [categories, setCategories]     = useState<Array<{ id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [initialized, setInitialized]   = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ── Read URL on mount ──────────────────────────────────────────
   useEffect(() => {
-    const f = readURLFilters();
-    setSearch(f.q);
-    setDebouncedSearch(f.q);
-    setStatusFilter(f.status);
-    setCategoryFilter(f.category);
-    setPage(f.page);
-    setInitialized(true);
-  }, []);
-
-  // ── Debounce search input ──────────────────────────────────────
-  useEffect(() => {
-    if (!initialized) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setDebouncedSearch(search);
       setPage(1);
     }, 400);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [search, initialized]);
+  }, [search]);
 
-  // ── Sync URL when filters change ──────────────────────────────
-  useEffect(() => {
-    if (!initialized) return;
-    writeURLFilters(debouncedSearch, statusFilter, categoryFilter, page);
-  }, [initialized, debouncedSearch, statusFilter, categoryFilter, page]);
-
-  // ── Fetch data ─────────────────────────────────────────────────
   const fetchItems = useCallback(async () => {
-    if (!initialized) return;
     setLoading(true);
     const params = new URLSearchParams();
     params.set("page", String(page));
     if (debouncedSearch) params.set("search", debouncedSearch);
-    if (statusFilter)    params.set("status", statusFilter);
-    if (categoryFilter)  params.set("categoryId", categoryFilter);
-    const res  = await fetch(`/api/inventory?${params}`);
+    if (statusFilter) params.set("status", statusFilter);
+    if (categoryFilter) params.set("categoryId", categoryFilter);
+
+    const res = await fetch(`/api/inventory?${params}`);
     const data = await res.json();
     setItems(data.items || []);
     setTotal(data.total || 0);
     setTotalPages(data.totalPages || 1);
     setLoading(false);
-  }, [initialized, page, debouncedSearch, statusFilter, categoryFilter]);
+  }, [page, debouncedSearch, statusFilter, categoryFilter]);
 
-  useEffect(() => { fetchItems(); }, [fetchItems]);
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
 
   useEffect(() => {
     fetch("/api/categories/flat")
-      .then(r => r.json())
+      .then((r) => r.json())
       .then(setCategories)
       .catch(() => {});
   }, []);
 
-  const hasFilters = !!(search || statusFilter || categoryFilter);
-
-  function clearFilters() {
-    setSearch("");
-    setDebouncedSearch("");
-    setStatusFilter("");
-    setCategoryFilter("");
-    setPage(1);
-  }
-
   return (
     <AppShell title="Inventory">
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" />
+      {/* Page header */}
+      <div className="flex flex-col gap-1 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-on-surface">
+              Inventory
+            </h1>
+            <p className="text-sm text-on-surface-variant mt-0.5">
+              Track and manage all received ingredients and materials.
+            </p>
+          </div>
+          <Link href="/inventory/receive">
+            <Button className="rounded-lg h-9 text-sm font-medium bg-tertiary hover:bg-tertiary/90 text-white">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Receive Ingredient
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant/60" />
           <Input
-            placeholder="Search by name or batch code…"
+            placeholder="Search by name or batch code..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9 rounded-xl"
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8 h-9 rounded-lg text-sm bg-surface-container/40 border-outline-variant/15 focus:border-tertiary/40"
           />
         </div>
-
         <Select
-          value={statusFilter || "ALL"}
-          onValueChange={v => { setStatusFilter(v === "ALL" ? "" : v ?? ""); setPage(1); }}
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(!v || v === "ALL" ? "" : v ?? "");
+            setPage(1);
+          }}
         >
-          <SelectTrigger className="w-[160px] rounded-xl">
+          <SelectTrigger className="w-[150px] h-9 rounded-lg text-sm bg-surface-container/40 border-outline-variant/15">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
@@ -172,97 +146,101 @@ export default function InventoryPage() {
             <SelectItem value="WASTE">Waste</SelectItem>
           </SelectContent>
         </Select>
-
-        {categories.length > 0 && (
-          <Select
-            value={categoryFilter || "ALL"}
-            onValueChange={v => { setCategoryFilter(v === "ALL" ? "" : v ?? ""); setPage(1); }}
-          >
-            <SelectTrigger className="w-[160px] rounded-xl">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Categories</SelectItem>
-              {categories.map(c => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {total > 0 && (
+          <span className="text-xs text-on-surface-variant ml-auto tabular-nums">
+            {total} item{total !== 1 ? "s" : ""}
+          </span>
         )}
-
-        {hasFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearFilters}
-            className="rounded-xl text-on-surface-variant hover:text-on-surface gap-1.5"
-          >
-            <X className="w-3.5 h-3.5" />
-            Clear
-          </Button>
-        )}
-
-        <Link href="/inventory/receive">
-          <Button className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl shadow-sm shadow-tertiary/25">
-            <Plus className="w-4 h-4 mr-2" />
-            Receive Ingredient
-          </Button>
-        </Link>
       </div>
 
-      {/* Table */}
-      <Card className="rounded-2xl border-0 shadow-sm">
+      {/* Table card */}
+      <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Batch Code</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Weight (lb)</TableHead>
-                <TableHead>Count</TableHead>
-                <TableHead>Received</TableHead>
+              <TableRow className="border-b border-outline-variant/10 hover:bg-transparent">
+                <TableHead className="h-10 px-4 text-xs font-medium uppercase tracking-wider text-on-surface-variant/70">
+                  Batch Code
+                </TableHead>
+                <TableHead className="h-10 px-4 text-xs font-medium uppercase tracking-wider text-on-surface-variant/70">
+                  Name
+                </TableHead>
+                <TableHead className="h-10 px-4 text-xs font-medium uppercase tracking-wider text-on-surface-variant/70">
+                  Category
+                </TableHead>
+                <TableHead className="h-10 px-4 text-xs font-medium uppercase tracking-wider text-on-surface-variant/70">
+                  Status
+                </TableHead>
+                <TableHead className="h-10 px-4 text-xs font-medium uppercase tracking-wider text-on-surface-variant/70 text-right">
+                  Weight (lb)
+                </TableHead>
+                <TableHead className="h-10 px-4 text-xs font-medium uppercase tracking-wider text-on-surface-variant/70 text-right">
+                  Count
+                </TableHead>
+                <TableHead className="h-10 px-4 text-xs font-medium uppercase tracking-wider text-on-surface-variant/70">
+                  Received
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10 text-on-surface-variant">
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-tertiary/30 border-t-tertiary rounded-full animate-spin" />
-                      Loading…
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={7} className="text-center py-16">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-tertiary border-t-transparent" />
+                      <span className="text-sm text-on-surface-variant">Loading inventory...</span>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : items.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10 text-on-surface-variant">
-                    {hasFilters ? "No items match the current filters." : "No items found. Receive your first ingredient to get started."}
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={7} className="text-center py-16">
+                    <div className="flex flex-col items-center gap-2">
+                      <Package className="w-10 h-10 text-on-surface-variant/30" />
+                      <p className="text-sm font-medium text-on-surface-variant">
+                        No items found
+                      </p>
+                      <p className="text-xs text-on-surface-variant/60">
+                        Receive your first ingredient to get started.
+                      </p>
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
-                items.map(item => (
-                  <TableRow key={item.id} className="cursor-pointer hover:bg-surface-container/50">
-                    <TableCell>
+                items.map((item) => (
+                  <TableRow
+                    key={item.id}
+                    className="cursor-pointer border-b border-outline-variant/8 hover:bg-surface-container/40 transition-colors"
+                  >
+                    <TableCell className="px-4 py-3">
                       <Link
                         href={`/inventory/${item.id}`}
-                        className="font-mono text-sm text-tertiary hover:text-tertiary/80"
+                        className="font-mono text-[13px] font-medium text-tertiary hover:text-tertiary/80 transition-colors"
                       >
                         {item.batchCode}
                       </Link>
                     </TableCell>
-                    <TableCell className="font-medium text-on-surface">{item.name}</TableCell>
-                    <TableCell className="text-on-surface-variant">{item.category.name}</TableCell>
-                    <TableCell><StatusBadge status={item.status} /></TableCell>
-                    <TableCell className="text-on-surface-variant">
-                      {item.weightGrams ? `${gramsToLb(Number(item.weightGrams))} lb` : "—"}
+                    <TableCell className="px-4 py-3 font-medium text-on-surface">
+                      {item.name}
                     </TableCell>
-                    <TableCell className="text-on-surface-variant">
+                    <TableCell className="px-4 py-3 text-sm text-on-surface-variant">
+                      {item.category.name}
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      <StatusBadge status={item.status} />
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-sm text-on-surface-variant tabular-nums text-right">
+                      {item.weightGrams
+                        ? `${gramsToLb(Number(item.weightGrams))} lb`
+                        : "\u2014"}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-sm text-on-surface-variant tabular-nums text-right">
                       {item.unitCount} {item.unitLabel}
                     </TableCell>
-                    <TableCell className="text-on-surface-variant text-sm">
-                      {item.receivedAt ? new Date(item.receivedAt).toLocaleDateString() : "—"}
+                    <TableCell className="px-4 py-3 text-sm text-on-surface-variant">
+                      {item.receivedAt
+                        ? new Date(item.receivedAt).toLocaleDateString()
+                        : "\u2014"}
                     </TableCell>
                   </TableRow>
                 ))
@@ -274,28 +252,35 @@ export default function InventoryPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-sm text-on-surface-variant">
-            Showing {items.length} of {total} items
+        <div className="flex items-center justify-between mt-4 px-1">
+          <p className="text-sm text-on-surface-variant tabular-nums">
+            Showing{" "}
+            <span className="font-medium text-on-surface">{items.length}</span>{" "}
+            of{" "}
+            <span className="font-medium text-on-surface">{total}</span>{" "}
+            items
           </p>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1">
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-lg h-8 w-8 p-0 border-outline-variant/15"
               disabled={page <= 1}
-              onClick={() => setPage(p => p - 1)}
+              onClick={() => setPage((p) => p - 1)}
             >
-              Previous
+              <ChevronLeft className="w-4 h-4" />
             </Button>
+            <span className="text-sm text-on-surface-variant px-2 tabular-nums">
+              {page} / {totalPages}
+            </span>
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-lg h-8 w-8 p-0 border-outline-variant/15"
               disabled={page >= totalPages}
-              onClick={() => setPage(p => p + 1)}
+              onClick={() => setPage((p) => p + 1)}
             >
-              Next
+              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>

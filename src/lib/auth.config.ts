@@ -32,6 +32,7 @@ export const authConfig: NextAuthConfig = {
       const { pathname } = nextUrl;
 
       // Public routes — no auth required
+      if (pathname === "/") return true; // Landing page
       if (pathname === "/login" || pathname.startsWith("/login/")) return true;
       if (pathname.startsWith("/api/auth")) return true;
 

@@ -50,29 +50,29 @@ function WarehouseLoginForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface px-4">
-      <Card className="w-full max-w-md rounded-2xl shadow-lg border-0">
-        <CardHeader className="text-center space-y-4 pb-2">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-[#0055d7] flex items-center justify-center">
-            <Warehouse className="w-7 h-7 text-white" />
+      <Card className="w-full max-w-sm rounded-xl border border-outline-variant/15 shadow-sm">
+        <CardHeader className="text-center space-y-3 pb-0 pt-8">
+          <div className="mx-auto w-11 h-11 rounded-xl bg-[#0055d7]/10 flex items-center justify-center">
+            <Warehouse className="w-5 h-5 text-[#0055d7]" />
           </div>
           <div>
-            <h1 className="text-2xl font-heading font-bold text-on-surface">
+            <h1 className="text-lg font-heading font-semibold text-on-surface">
               Warehouse Portal
             </h1>
-            <p className="text-sm text-on-surface-variant mt-1">
+            <p className="text-xs text-on-surface-variant mt-1">
               Central warehouse management & operations
             </p>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6 pb-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-3 rounded-xl bg-error/10 text-error text-sm">
+              <div className="p-2.5 rounded-lg bg-error/10 text-error text-xs font-medium">
                 {error}
               </div>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-on-surface-variant text-xs font-semibold tracking-wide uppercase">
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-on-surface text-xs font-medium">
                 Email
               </Label>
               <Input
@@ -83,11 +83,11 @@ function WarehouseLoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoFocus
-                className="rounded-xl"
+                className="rounded-lg h-9"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-on-surface-variant text-xs font-semibold tracking-wide uppercase">
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-on-surface text-xs font-medium">
                 Password
               </Label>
               <Input
@@ -97,30 +97,31 @@ function WarehouseLoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="rounded-xl"
+                className="rounded-lg h-9"
               />
             </div>
             <Button
               type="submit"
-              className="w-full bg-[#0055d7] hover:bg-[#0048b8] text-white rounded-xl"
+              className="w-full rounded-lg h-9 text-sm font-medium bg-tertiary hover:bg-tertiary/90 text-white"
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign in"}
             </Button>
 
-            <div className="text-xs text-on-surface-variant text-center pt-2 space-y-1">
+            <div className="text-[11px] text-on-surface-variant text-center pt-1 space-y-0.5">
               <p>Demo credentials:</p>
               <p>
-                <span className="font-medium">admin@stocktrace.com</span> / admin123
+                <span className="font-medium text-on-surface">admin@stocktrace.com</span>{" "}
+                / admin123
               </p>
             </div>
 
-            <div className="text-center pt-2">
+            <div className="text-center pt-1">
               <Link
                 href="/login"
-                className="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-on-surface transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-on-surface transition-colors"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3.5 h-3.5" />
                 Back to login
               </Link>
             </div>

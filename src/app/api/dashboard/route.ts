@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
-import { requireWarehouseAdmin } from "@/lib/auth-guard";
+import { NextRequest, NextResponse } from "next/server";
+import { requireDualAuth } from "@/lib/telegram/auth-guard";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
-  const { error } = await requireWarehouseAdmin();
+export async function GET(req: NextRequest) {
+  const { error, user } = await requireDualAuth(req);
   if (error) return error;
+  if (user!.role !== "WAREHOUSE_ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());

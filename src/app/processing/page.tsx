@@ -17,22 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { gramsToLb, lbToGrams } from "@/lib/constants";
-import { toast } from "sonner";
-
-const UNIT_OPTIONS = [
-  { value: "piece", label: "Piece" },
-  { value: "kg",    label: "Kg" },
-  { value: "lb",    label: "Lb" },
-  { value: "g",     label: "Grams" },
-  { value: "oz",    label: "Oz" },
-  { value: "liter", label: "Liter" },
-  { value: "case",  label: "Case" },
-  { value: "box",   label: "Box" },
-  { value: "bag",   label: "Bag" },
-  { value: "bunch", label: "Bunch" },
-  { value: "dozen", label: "Dozen" },
-];
-import { Scissors, Package, Grid3X3, Beef, Plus, Trash2, Check, Search } from "lucide-react";
+import { Scissors, Package, Grid3X3, Beef, Plus, Trash2, Check, Search, ChevronRight, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface InventoryItem {
@@ -85,6 +70,7 @@ function ProcessingContent() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [step, setStep] = useState(1);
@@ -97,22 +83,17 @@ function ProcessingContent() {
   const [notes, setNotes] = useState("");
 
   const fetchQueue = useCallback(async () => {
-    try {
-      const [res, processed] = await Promise.all([
-        fetch("/api/inventory?status=RECEIVED&limit=50"),
-        fetch("/api/inventory?status=PROCESSED&limit=50"),
-      ]);
-      const [data, processedData] = await Promise.all([res.json(), processed.json()]);
-      const allItems = [...(data.items || []), ...(processedData.items || [])];
-      setQueue(allItems);
-      if (preselectedId) {
-        const found = allItems.find((i: InventoryItem) => i.id === preselectedId);
-        if (found) setSelectedItem(found);
-      }
-    } catch {
-      toast.error("Failed to load processing queue");
-    } finally {
-      setLoading(false);
+    const res = await fetch("/api/inventory?status=RECEIVED&limit=50");
+    const data = await res.json();
+    const processed = await fetch("/api/inventory?status=PROCESSED&limit=50");
+    const processedData = await processed.json();
+    const allItems = [...(data.items || []), ...(processedData.items || [])];
+    setQueue(allItems);
+    setLoading(false);
+
+    if (preselectedId) {
+      const found = allItems.find((i: InventoryItem) => i.id === preselectedId);
+      if (found) setSelectedItem(found);
     }
   }, [preselectedId]);
 
@@ -139,6 +120,7 @@ function ProcessingContent() {
     setWasteWeight("");
     setNotes("");
     setError("");
+    setSuccess("");
   }
 
   function addOutput() {
@@ -197,14 +179,14 @@ function ProcessingContent() {
 
     if (!res.ok) {
       const data = await res.json();
-      const msg = data.error || "Processing failed";
-      setError(msg);
-      toast.error(msg);
+      setError(data.error || "Processing failed");
       return;
     }
 
-    toast.success("Processing complete! Items created successfully.");
-    router.push(`/inventory/${selectedItem!.id}`);
+    setSuccess("Processing complete! Items created successfully.");
+    setTimeout(() => {
+      router.push(`/inventory/${selectedItem!.id}`);
+    }, 1500);
   }
 
   const stepLabels = ["Select Step", "Source Details", "Define Outputs", "Review"];
@@ -214,47 +196,46 @@ function ProcessingContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Queue Panel */}
         <div className="lg:col-span-1">
-          <Card className="rounded-2xl border-0 shadow-sm">
+          <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Processing Queue</CardTitle>
-              <div className="relative mt-2">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant" />
+              <CardTitle className="text-sm font-semibold tracking-tight text-on-surface">Processing Queue</CardTitle>
+              <p className="text-sm text-on-surface-variant">{queue.length} items awaiting processing</p>
+              <div className="relative mt-3">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant/60" />
                 <Input
                   placeholder="Search items..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-8 text-sm rounded-lg bg-surface-container/50 border-0"
+                  className="pl-9 h-9 text-sm rounded-lg border-outline-variant/15"
                 />
               </div>
             </CardHeader>
             <CardContent className="pt-0">
               {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="w-5 h-5 border-2 border-tertiary/30 border-t-tertiary rounded-full animate-spin" />
-                </div>
+                <p className="text-sm text-on-surface-variant py-4">Loading...</p>
               ) : filteredQueue.length === 0 ? (
-                <p className="text-sm text-on-surface-variant">
+                <p className="text-sm text-on-surface-variant py-4">
                   {searchQuery ? "No matching items." : "No items to process."}
                 </p>
               ) : (
-                <div className="space-y-1.5 max-h-[calc(100vh-20rem)] overflow-y-auto">
+                <div className="space-y-1 max-h-[calc(100vh-20rem)] overflow-y-auto">
                   {filteredQueue.map((item) => (
                     <button
                       key={item.id}
                       onClick={() => { setSelectedItem(item); resetWizard(); }}
-                      className={`w-full text-left p-3 rounded-xl transition-all ${
+                      className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors ${
                         selectedItem?.id === item.id
-                          ? "bg-tertiary/10 ring-1 ring-tertiary/30"
-                          : "hover:bg-surface-container"
+                          ? "bg-tertiary/10 border border-tertiary/20"
+                          : "hover:bg-surface-container/60 border border-transparent"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <StatusBadge status={item.status} />
                         {selectedItem?.id === item.id && (
-                          <span className="text-[10px] font-bold text-tertiary uppercase tracking-wider">Active</span>
+                          <span className="text-[10px] font-medium text-tertiary uppercase tracking-wide">Selected</span>
                         )}
                       </div>
-                      <p className="text-sm font-semibold text-on-surface">{item.name}</p>
+                      <p className="text-sm font-medium text-on-surface">{item.name}</p>
                       <p className="text-xs text-on-surface-variant mt-0.5">
                         Batch #{item.batchCode}
                         {item.weightGrams ? ` \u00B7 ${gramsToLb(Number(item.weightGrams))} lb` : ""}
@@ -270,196 +251,222 @@ function ProcessingContent() {
         {/* Wizard Panel */}
         <div className="lg:col-span-2">
           {!selectedItem ? (
-            <Card className="rounded-2xl border-0 shadow-sm">
+            <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
               <CardContent className="py-16 text-center">
-                <Scissors className="w-12 h-12 text-on-surface-variant/30 mx-auto mb-3" />
-                <p className="text-on-surface-variant font-medium">
+                <div className="w-12 h-12 rounded-xl bg-surface-container/60 flex items-center justify-center mx-auto mb-4">
+                  <Scissors className="w-6 h-6 text-on-surface-variant/40" />
+                </div>
+                <p className="text-sm font-medium text-on-surface-variant">
                   Select an item from the queue to start processing
                 </p>
               </CardContent>
             </Card>
           ) : (
-            <Card className="rounded-2xl border-0 shadow-sm">
-              <CardHeader className="pb-3">
-                {/* Session header */}
-                <div className="flex items-center gap-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">
-                  <span>Processing Session</span>
-                  <span className="text-outline-variant">&mdash;</span>
-                  <span>{selectedItem.name} (Batch #{selectedItem.batchCode})</span>
+            <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm text-on-surface-variant">
+                    Processing <span className="font-medium text-on-surface">{selectedItem.name}</span> <span className="text-on-surface-variant/60">&middot;</span> Batch #{selectedItem.batchCode}
+                  </p>
                 </div>
-                <CardTitle className="text-xl font-bold text-on-surface">
-                  Step {step}: {stepLabels[step - 1]}
+                <CardTitle className="text-2xl font-semibold tracking-tight text-on-surface">
+                  {stepLabels[step - 1]}
                 </CardTitle>
 
-                {/* Step dots */}
-                <div className="flex items-center gap-3 mt-4">
+                {/* Step indicator */}
+                <div className="flex items-center gap-2 mt-4">
                   {[1, 2, 3, 4].map((s) => (
-                    <div key={s} className="flex items-center gap-3">
+                    <div key={s} className="flex items-center gap-2">
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
                           s === step
-                            ? "bg-tertiary text-white shadow-md shadow-tertiary/30"
+                            ? "bg-tertiary text-on-tertiary"
                             : s < step
-                              ? "bg-emerald-500 text-white"
-                              : "bg-surface-container text-on-surface-variant"
+                              ? "bg-emerald-500/15 text-emerald-600"
+                              : "bg-surface-container text-on-surface-variant/60"
                         }`}
                       >
-                        {s < step ? <Check className="w-4 h-4" /> : s}
+                        {s < step ? <Check className="w-3.5 h-3.5" /> : s}
                       </div>
                       {s < 4 && (
-                        <div className={`w-10 h-0.5 rounded ${s < step ? "bg-emerald-500" : "bg-surface-container"}`} />
+                        <div className={`w-8 h-[2px] rounded-full ${s < step ? "bg-emerald-500/30" : "bg-outline-variant/15"}`} />
                       )}
                     </div>
                   ))}
+                  <span className="ml-2 text-xs text-on-surface-variant">Step {step} of 4</span>
                 </div>
               </CardHeader>
               <CardContent>
                 {error && (
-                  <div className="p-3 rounded-xl bg-error/10 text-error text-sm mb-4">{error}</div>
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-error/10 text-error text-sm mb-4">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    {error}
+                  </div>
+                )}
+                {success && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 text-emerald-700 text-sm mb-4">
+                    <Check className="w-4 h-4 shrink-0" />
+                    {success}
+                  </div>
                 )}
 
                 {/* Step 1 */}
                 {step === 1 && (
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     <div className="grid grid-cols-2 gap-3">
                       {STEP_TYPES.map((type) => (
                         <button
                           key={type.value}
                           onClick={() => setStepType(type.value)}
-                          className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          className={`p-4 rounded-xl text-left transition-all border ${
                             stepType === type.value
-                              ? "border-tertiary bg-tertiary/5 shadow-sm"
-                              : "border-outline-variant/20 hover:border-tertiary/30 hover:bg-surface-container/30"
+                              ? "border-tertiary bg-tertiary/5"
+                              : "border-outline-variant/15 hover:border-outline-variant/30 hover:bg-surface-container/40"
                           }`}
                         >
-                          <type.icon className={`w-6 h-6 mb-2 ${stepType === type.value ? "text-tertiary" : "text-on-surface-variant"}`} />
-                          <p className="font-semibold text-sm text-on-surface">{type.label}</p>
-                          <p className="text-xs text-on-surface-variant">{type.description}</p>
+                          <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${
+                            stepType === type.value ? "bg-tertiary/10" : "bg-surface-container/60"
+                          }`}>
+                            <type.icon className={`w-4.5 h-4.5 ${stepType === type.value ? "text-tertiary" : "text-on-surface-variant"}`} />
+                          </div>
+                          <p className="text-sm font-medium text-on-surface">{type.label}</p>
+                          <p className="text-xs text-on-surface-variant mt-0.5">{type.description}</p>
                         </button>
                       ))}
                     </div>
                     {stepType === "CUSTOM" && (
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Custom Step Name</Label>
-                        <Input value={stepLabel} onChange={(e) => setStepLabel(e.target.value)} placeholder="e.g., Marinate, Debone" className="rounded-xl" />
+                      <div className="space-y-1.5">
+                        <Label className="text-sm font-medium text-on-surface">Custom Step Name</Label>
+                        <Input value={stepLabel} onChange={(e) => setStepLabel(e.target.value)} placeholder="e.g., Marinate, Debone" className="rounded-lg h-9" />
                       </div>
                     )}
-                    <Button onClick={() => setStep(2)} disabled={!stepType} className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">
-                      Next Step
-                    </Button>
+                    <div className="flex justify-end pt-2">
+                      <Button onClick={() => setStep(2)} disabled={!stepType} className="rounded-lg h-9 text-sm font-medium bg-tertiary hover:bg-tertiary-dim text-on-tertiary">
+                        Continue
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
                   </div>
                 )}
 
                 {/* Step 2 */}
                 {step === 2 && (
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-surface-container/40 space-y-2">
-                      <p className="font-semibold text-on-surface">{selectedItem.name}</p>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div><span className="text-on-surface-variant">Weight:</span> <span className="font-semibold text-on-surface">{inputWeightLb} lb</span></div>
-                        <div><span className="text-on-surface-variant">Count:</span> <span className="font-semibold text-on-surface">{selectedItem.unitCount} {selectedItem.unitLabel}</span></div>
-                        <div><span className="text-on-surface-variant">Category:</span> <span className="font-semibold text-on-surface">{selectedItem.category.name}</span></div>
+                  <div className="space-y-5">
+                    <div className="rounded-lg border border-outline-variant/15 p-4">
+                      <p className="text-sm font-medium text-on-surface mb-3">Source Item</p>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-xs text-on-surface-variant mb-0.5">Weight</p>
+                          <p className="text-sm font-medium text-on-surface">{inputWeightLb} lb</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-on-surface-variant mb-0.5">Count</p>
+                          <p className="text-sm font-medium text-on-surface">{selectedItem.unitCount} {selectedItem.unitLabel}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-on-surface-variant mb-0.5">Category</p>
+                          <p className="text-sm font-medium text-on-surface">{selectedItem.category.name}</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Notes</Label>
-                      <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Processing notes..." rows={3} className="rounded-xl" />
+                    <div className="space-y-1.5">
+                      <Label className="text-sm font-medium text-on-surface">Notes</Label>
+                      <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional processing notes..." rows={3} className="rounded-lg text-sm" />
                     </div>
-                    <div className="flex gap-3">
-                      <Button variant="outline" onClick={() => setStep(1)} className="rounded-xl">Previous Step</Button>
-                      <Button onClick={() => { if (!outputs[0].categoryId) updateOutput(0, "categoryId", selectedItem.category.id); setStep(3); }} className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">Next Step</Button>
+                    <div className="flex justify-between pt-2">
+                      <Button variant="outline" onClick={() => setStep(1)} className="rounded-lg h-9 text-sm font-medium">Back</Button>
+                      <Button onClick={() => { if (!outputs[0].categoryId) updateOutput(0, "categoryId", selectedItem.category.id); setStep(3); }} className="rounded-lg h-9 text-sm font-medium bg-tertiary hover:bg-tertiary-dim text-on-tertiary">
+                        Continue
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
                     </div>
                   </div>
                 )}
 
                 {/* Step 3 */}
                 {step === 3 && (
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-semibold text-on-surface">Resulting Inventory</h3>
-                        <p className="text-xs text-on-surface-variant">Specify the products generated from this processing step.</p>
+                        <h3 className="text-sm font-medium text-on-surface">Output Items</h3>
+                        <p className="text-sm text-on-surface-variant">Define the products from this processing step</p>
                       </div>
-                      <Button variant="outline" size="sm" onClick={addOutput} className="rounded-xl text-tertiary border-tertiary/30">
-                        <Plus className="w-4 h-4 mr-1" /> Add Output
+                      <Button variant="outline" size="sm" onClick={addOutput} className="rounded-lg h-9 text-sm font-medium">
+                        <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Output
                       </Button>
                     </div>
 
-                    {/* Output table header */}
-                    <div className="grid grid-cols-[1fr_80px_64px_110px_32px] gap-3 px-1 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
-                      <span>Item Name</span>
-                      <span>Weight (lb)</span>
-                      <span>Count</span>
-                      <span>Unit</span>
-                      <span></span>
-                    </div>
-
-                    {outputs.map((output, idx) => (
-                      <div key={idx} className="grid grid-cols-[1fr_80px_64px_110px_32px] gap-3 items-center">
-                        <Input
-                          value={output.name}
-                          onChange={(e) => updateOutput(idx, "name", e.target.value)}
-                          placeholder="Output item name"
-                          className="rounded-lg border-0 border-b border-outline-variant/30 bg-transparent focus:ring-0 px-1"
-                        />
-                        <Input
-                          type="number" step="0.01" min="0"
-                          value={output.weight}
-                          onChange={(e) => updateOutput(idx, "weight", e.target.value)}
-                          placeholder="0.00"
-                          className="rounded-lg border-0 border-b border-outline-variant/30 bg-transparent focus:ring-0 px-1 text-center"
-                        />
-                        <Input
-                          type="number" min="1"
-                          value={output.unitCount}
-                          onChange={(e) => updateOutput(idx, "unitCount", e.target.value)}
-                          className="rounded-lg border-0 border-b border-outline-variant/30 bg-transparent focus:ring-0 px-1 text-center"
-                        />
-                        <Select
-                          value={output.unitLabel}
-                          onValueChange={(v) => updateOutput(idx, "unitLabel", v ?? "piece")}
-                        >
-                          <SelectTrigger className="rounded-lg border-outline-variant/30 h-9 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {UNIT_OPTIONS.map((u) => (
-                              <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {outputs.length > 1 ? (
-                          <Button variant="ghost" size="sm" onClick={() => removeOutput(idx)} className="h-8 w-8 p-0">
-                            <Trash2 className="w-3.5 h-3.5 text-error" />
-                          </Button>
-                        ) : <div className="w-8 h-8" />}
+                    <div className="rounded-lg border border-outline-variant/15 overflow-hidden">
+                      {/* Table header */}
+                      <div className="grid grid-cols-[1fr_100px_80px_36px] gap-3 px-4 py-2.5 bg-surface-container/40 border-b border-outline-variant/10">
+                        <span className="text-xs font-medium text-on-surface-variant">Item Name</span>
+                        <span className="text-xs font-medium text-on-surface-variant">Weight (lb)</span>
+                        <span className="text-xs font-medium text-on-surface-variant">Count</span>
+                        <span></span>
                       </div>
-                    ))}
 
-                    {/* Waste row */}
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 mt-2">
-                      <div>
-                        <p className="text-sm font-semibold text-amber-700">Unaccounted Waste / Trimmings</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="w-20">
+                      {outputs.map((output, idx) => (
+                        <div key={idx} className={`grid grid-cols-[1fr_100px_80px_36px] gap-3 px-4 py-2.5 items-center ${idx > 0 ? "border-t border-outline-variant/10" : ""}`}>
+                          <Input
+                            value={output.name}
+                            onChange={(e) => updateOutput(idx, "name", e.target.value)}
+                            placeholder="Output item name"
+                            className="rounded-lg h-9 text-sm border-outline-variant/15"
+                          />
                           <Input
                             type="number" step="0.01" min="0"
-                            value={wasteWeight || calculatedWaste.toFixed(2)}
-                            onChange={(e) => setWasteWeight(e.target.value)}
-                            className="text-center rounded-lg bg-amber-500/10 border-amber-500/20 font-semibold text-amber-700"
+                            value={output.weight}
+                            onChange={(e) => updateOutput(idx, "weight", e.target.value)}
+                            placeholder="0.00"
+                            className="rounded-lg h-9 text-sm border-outline-variant/15 text-center"
                           />
+                          <Input
+                            type="number" min="1"
+                            value={output.unitCount}
+                            onChange={(e) => updateOutput(idx, "unitCount", e.target.value)}
+                            className="rounded-lg h-9 text-sm border-outline-variant/15 text-center"
+                          />
+                          <div className="flex justify-center">
+                            {outputs.length > 1 && (
+                              <Button variant="ghost" size="sm" onClick={() => removeOutput(idx)} className="h-8 w-8 p-0 rounded-lg hover:bg-error/10">
+                                <Trash2 className="w-3.5 h-3.5 text-on-surface-variant hover:text-error" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-xs font-semibold text-on-surface-variant">
-                          EFFICIENCY: {efficiency}%
-                        </span>
+                      ))}
+                    </div>
+
+                    {/* Waste / efficiency row */}
+                    <div className="rounded-lg border border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-amber-600" />
+                          <span className="text-sm font-medium text-amber-700 dark:text-amber-500">Waste / Trimmings</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="w-24">
+                            <Input
+                              type="number" step="0.01" min="0"
+                              value={wasteWeight || calculatedWaste.toFixed(2)}
+                              onChange={(e) => setWasteWeight(e.target.value)}
+                              className="rounded-lg h-9 text-sm text-center border-amber-500/20 bg-white/60 dark:bg-amber-500/10 font-medium text-amber-700 dark:text-amber-400"
+                            />
+                          </div>
+                          <span className="text-xs text-on-surface-variant">lb</span>
+                          <div className="h-4 w-px bg-outline-variant/20" />
+                          <span className="text-sm font-medium text-on-surface">
+                            {efficiency}% <span className="text-xs font-normal text-on-surface-variant">yield</span>
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex gap-3 pt-2">
-                      <Button variant="outline" onClick={() => setStep(2)} className="rounded-xl">Previous Step</Button>
-                      <Button onClick={() => setStep(4)} disabled={outputs.some((o) => !o.name)} className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">
-                        Final Review & Summary
+                    <div className="flex justify-between pt-2">
+                      <Button variant="outline" onClick={() => setStep(2)} className="rounded-lg h-9 text-sm font-medium">Back</Button>
+                      <Button onClick={() => setStep(4)} disabled={outputs.some((o) => !o.name)} className="rounded-lg h-9 text-sm font-medium bg-tertiary hover:bg-tertiary-dim text-on-tertiary">
+                        Review Summary
+                        <ChevronRight className="w-4 h-4 ml-1" />
                       </Button>
                     </div>
                   </div>
@@ -467,31 +474,48 @@ function ProcessingContent() {
 
                 {/* Step 4 */}
                 {step === 4 && (
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-surface-container/40 space-y-3">
-                      <div className="text-sm"><span className="text-on-surface-variant">Step Type:</span> <span className="font-semibold text-on-surface">{STEP_TYPES.find((t) => t.value === stepType)?.label}{stepLabel && ` (${stepLabel})`}</span></div>
-                      <div className="text-sm"><span className="text-on-surface-variant">Source:</span> <span className="font-semibold text-on-surface">{selectedItem.name} ({inputWeightLb} lb)</span></div>
-                      {notes && <div className="text-sm"><span className="text-on-surface-variant">Notes:</span> <span className="text-on-surface">{notes}</span></div>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Will create {outputs.length} output(s):</p>
-                      {outputs.map((o, idx) => (
-                        <div key={idx} className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-sm text-on-surface">
-                          {o.name} — {o.weight || "?"} lb, {o.unitCount} {o.unitLabel}
-                        </div>
-                      ))}
-                      {(parseFloat(wasteWeight) || calculatedWaste) > 0 && (
-                        <div className="p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/20 text-sm text-on-surface">
-                          Waste — {wasteWeight || calculatedWaste.toFixed(2)} lb
+                  <div className="space-y-5">
+                    {/* Summary card */}
+                    <div className="rounded-lg border border-outline-variant/15 divide-y divide-outline-variant/10">
+                      <div className="px-4 py-3 flex items-center justify-between">
+                        <span className="text-sm text-on-surface-variant">Step Type</span>
+                        <span className="text-sm font-medium text-on-surface">{STEP_TYPES.find((t) => t.value === stepType)?.label}{stepLabel && ` (${stepLabel})`}</span>
+                      </div>
+                      <div className="px-4 py-3 flex items-center justify-between">
+                        <span className="text-sm text-on-surface-variant">Source</span>
+                        <span className="text-sm font-medium text-on-surface">{selectedItem.name} &middot; {inputWeightLb} lb</span>
+                      </div>
+                      {notes && (
+                        <div className="px-4 py-3 flex items-center justify-between">
+                          <span className="text-sm text-on-surface-variant">Notes</span>
+                          <span className="text-sm text-on-surface max-w-[60%] text-right">{notes}</span>
                         </div>
                       )}
                     </div>
 
-                    <div className="flex gap-3">
-                      <Button variant="outline" onClick={() => setStep(3)} className="rounded-xl">Previous Step</Button>
-                      <Button onClick={handleSubmit} disabled={submitting} className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl">
-                        {submitting ? "Processing..." : "Complete Processing Step"}
+                    {/* Outputs */}
+                    <div>
+                      <p className="text-sm font-medium text-on-surface mb-2">Creating {outputs.length} output{outputs.length > 1 ? "s" : ""}</p>
+                      <div className="space-y-2">
+                        {outputs.map((o, idx) => (
+                          <div key={idx} className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
+                            <span className="text-sm font-medium text-on-surface">{o.name}</span>
+                            <span className="text-sm text-on-surface-variant">{o.weight || "?"} lb &middot; {o.unitCount} {o.unitLabel}</span>
+                          </div>
+                        ))}
+                        {(parseFloat(wasteWeight) || calculatedWaste) > 0 && (
+                          <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-amber-500/5 border border-amber-500/15">
+                            <span className="text-sm font-medium text-amber-700 dark:text-amber-500">Waste</span>
+                            <span className="text-sm text-on-surface-variant">{wasteWeight || calculatedWaste.toFixed(2)} lb</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between pt-2">
+                      <Button variant="outline" onClick={() => setStep(3)} className="rounded-lg h-9 text-sm font-medium">Back</Button>
+                      <Button onClick={handleSubmit} disabled={submitting} className="rounded-lg h-9 text-sm font-medium bg-tertiary hover:bg-tertiary-dim text-on-tertiary">
+                        {submitting ? "Processing..." : "Complete Processing"}
                       </Button>
                     </div>
                   </div>

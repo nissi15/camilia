@@ -10,9 +10,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { gramsToLb } from "@/lib/constants";
-import { TrendingUp, AlertTriangle, Download } from "lucide-react";
+import { TrendingUp, AlertTriangle, Download, Weight, BarChart3, Layers, Package, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 const RechartsLoading = () => <div className="h-64 flex items-center justify-center text-sm text-on-surface-variant">Loading chart...</div>;
 
@@ -67,7 +66,7 @@ export default function ReportsPage() {
         setUsage(usageData);
         setDispatch(dispatchData.dispatches || []);
       })
-      .catch(() => toast.error("Failed to load reports"))
+      .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
@@ -79,72 +78,109 @@ export default function ReportsPage() {
 
   return (
     <AppShell title="Reports">
+      {/* Page header */}
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-on-surface tracking-tight">Reports & Analytics</h1>
-          <p className="text-on-surface-variant text-sm mt-1">Waste analysis, yield tracking, and dispatch logs.</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-on-surface">Reports & Analytics</h1>
+          <p className="text-sm text-on-surface-variant mt-1">Waste analysis, yield tracking, and dispatch logs.</p>
         </div>
         <div className="flex gap-2">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="rounded-xl gap-1.5 text-xs"
+            className="gap-1.5 text-xs text-on-surface-variant hover:text-on-surface"
             onClick={() => window.open("/api/reports/export?type=waste&days=30", "_blank")}
           >
             <Download className="w-3.5 h-3.5" />
-            Export Waste CSV
+            Waste CSV
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="rounded-xl gap-1.5 text-xs"
+            className="gap-1.5 text-xs text-on-surface-variant hover:text-on-surface"
             onClick={() => window.open("/api/reports/export?type=yield&days=30", "_blank")}
           >
             <Download className="w-3.5 h-3.5" />
-            Export Yield CSV
+            Yield CSV
           </Button>
         </div>
       </div>
 
+      {/* Tabs */}
       <Tabs defaultValue="waste">
-        <TabsList variant="default" className="mb-1">
-          <TabsTrigger value="waste">Waste</TabsTrigger>
-          <TabsTrigger value="usage">Usage</TabsTrigger>
-          <TabsTrigger value="dispatch">Dispatch Log</TabsTrigger>
+        <TabsList className="h-9 rounded-lg bg-surface-container/60 p-0.5">
+          <TabsTrigger
+            value="waste"
+            className="rounded-md px-3 text-sm data-[state=active]:bg-white data-[state=active]:text-on-surface data-[state=active]:shadow-sm"
+          >
+            Waste
+          </TabsTrigger>
+          <TabsTrigger
+            value="usage"
+            className="rounded-md px-3 text-sm data-[state=active]:bg-white data-[state=active]:text-on-surface data-[state=active]:shadow-sm"
+          >
+            Usage
+          </TabsTrigger>
+          <TabsTrigger
+            value="dispatch"
+            className="rounded-md px-3 text-sm data-[state=active]:bg-white data-[state=active]:text-on-surface data-[state=active]:shadow-sm"
+          >
+            Dispatch Log
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="waste" className="mt-4">
-          {/* Quick Stats */}
+        {/* ── Waste Tab ── */}
+        <TabsContent value="waste" className="mt-5 space-y-5">
+          {/* Stat cards */}
           {!loading && waste.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-              {/* Highest waste card */}
-              <Card className="rounded-2xl border-0 shadow-sm bg-gradient-to-br from-error/5 to-error/10 lg:col-span-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Highest Waste */}
+              <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
                 <CardContent className="p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <AlertTriangle className="w-4 h-4 text-error" />
-                    <span className="text-[10px] font-bold text-error uppercase tracking-widest">Highest Waste Stream</span>
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm text-on-surface-variant">Highest Waste Stream</p>
+                      <p className="text-2xl font-semibold tracking-tight text-error">
+                        {highestWaste?.wastePercentage.toFixed(1)}%
+                      </p>
+                      <p className="text-xs text-on-surface-variant">{highestWaste?.name} Division</p>
+                    </div>
+                    <div className="rounded-lg bg-error/10 p-2">
+                      <AlertTriangle className="h-4 w-4 text-error" />
+                    </div>
                   </div>
-                  <p className="text-3xl font-bold text-error">{highestWaste?.wastePercentage.toFixed(1)}%</p>
-                  <p className="text-sm font-medium text-on-surface mt-1">{highestWaste?.name} Division</p>
                 </CardContent>
               </Card>
 
-              {/* Quick stats */}
-              <Card className="rounded-2xl border-0 shadow-sm lg:col-span-2">
+              {/* Total Waste Mass */}
+              <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
                 <CardContent className="p-5">
-                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Quick Stats</span>
-                  <div className="grid grid-cols-3 gap-4 mt-3">
-                    <div>
-                      <p className="text-xs text-on-surface-variant">Total Waste Mass</p>
-                      <p className="text-lg font-bold text-on-surface">{gramsToLb(totalWasteLb)} lb</p>
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm text-on-surface-variant">Total Waste Mass</p>
+                      <p className="text-2xl font-semibold tracking-tight text-on-surface">
+                        {gramsToLb(totalWasteLb)} lb
+                      </p>
+                      <p className="text-xs text-on-surface-variant">Overall {overallWastePct}% waste</p>
                     </div>
-                    <div>
-                      <p className="text-xs text-on-surface-variant">Overall Waste %</p>
-                      <p className="text-lg font-bold text-error">{overallWastePct}%</p>
+                    <div className="rounded-lg bg-on-surface/5 p-2">
+                      <Weight className="h-4 w-4 text-on-surface-variant" />
                     </div>
-                    <div>
-                      <p className="text-xs text-on-surface-variant">Categories Tracked</p>
-                      <p className="text-lg font-bold text-on-surface">{waste.length}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Categories Tracked */}
+              <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm text-on-surface-variant">Categories Tracked</p>
+                      <p className="text-2xl font-semibold tracking-tight text-on-surface">{waste.length}</p>
+                      <p className="text-xs text-on-surface-variant">Active categories</p>
+                    </div>
+                    <div className="rounded-lg bg-on-surface/5 p-2">
+                      <Layers className="h-4 w-4 text-on-surface-variant" />
                     </div>
                   </div>
                 </CardContent>
@@ -153,28 +189,42 @@ export default function ReportsPage() {
           )}
 
           {/* Chart */}
-          <Card className="rounded-2xl border-0 shadow-sm mb-6">
+          <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-on-surface">Waste Distribution</CardTitle>
-              <p className="text-xs text-on-surface-variant">Percentage of total input lost by category</p>
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-on-surface-variant" />
+                <div>
+                  <CardTitle className="text-sm font-semibold text-on-surface">Waste Distribution</CardTitle>
+                  <p className="text-xs text-on-surface-variant mt-0.5">Percentage of total input lost by category</p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-sm text-on-surface-variant">Loading...</p>
+                <div className="h-64 flex items-center justify-center">
+                  <p className="text-sm text-on-surface-variant">Loading...</p>
+                </div>
               ) : waste.length === 0 ? (
-                <p className="text-sm text-on-surface-variant">No waste data yet. Process some items to see reports.</p>
+                <div className="h-64 flex items-center justify-center">
+                  <p className="text-sm text-on-surface-variant">No waste data yet. Process some items to see reports.</p>
+                </div>
               ) : (
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={waste} barSize={40}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#eaeff1" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#586064" }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 12, fill: "#586064" }} unit="%" axisLine={false} tickLine={false} />
+                    <BarChart data={waste} barSize={36}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--outline-variant) / 0.15)" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#6b7280" }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} unit="%" axisLine={false} tickLine={false} />
                       <Tooltip
-                        contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                        contentStyle={{
+                          borderRadius: 8,
+                          border: "1px solid hsl(var(--outline-variant) / 0.15)",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                          fontSize: 13,
+                        }}
                         formatter={(value) => [`${Number(value).toFixed(1)}%`, "Waste"]}
                       />
-                      <Bar dataKey="wastePercentage" fill="#9f403d" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="wastePercentage" fill="#9f403d" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -184,35 +234,32 @@ export default function ReportsPage() {
 
           {/* Categorical Breakdown Table */}
           {!loading && waste.length > 0 && (
-            <Card className="rounded-2xl border-0 shadow-sm">
+            <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold text-on-surface">Categorical Breakdown</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Category</TableHead>
-                      <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Total Input (lb)</TableHead>
-                      <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Total Output (lb)</TableHead>
-                      <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Waste Weight (lb)</TableHead>
-                      <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Waste %</TableHead>
+                    <TableRow className="border-outline-variant/15 hover:bg-transparent">
+                      <TableHead className="text-xs font-medium text-on-surface-variant">Category</TableHead>
+                      <TableHead className="text-xs font-medium text-on-surface-variant">Total Input (lb)</TableHead>
+                      <TableHead className="text-xs font-medium text-on-surface-variant">Total Output (lb)</TableHead>
+                      <TableHead className="text-xs font-medium text-on-surface-variant">Waste (lb)</TableHead>
+                      <TableHead className="text-xs font-medium text-on-surface-variant text-right">Waste %</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {waste.map((w) => (
-                      <TableRow key={w.name}>
+                      <TableRow key={w.name} className="border-outline-variant/15 hover:bg-surface-container/30">
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-error" />
-                            <span className="font-medium text-on-surface">{w.name}</span>
-                          </div>
+                          <span className="text-sm font-medium text-on-surface">{w.name}</span>
                         </TableCell>
-                        <TableCell className="text-on-surface-variant">{gramsToLb(w.inputWeight)}</TableCell>
-                        <TableCell className="text-on-surface-variant">{gramsToLb(w.outputWeight)}</TableCell>
-                        <TableCell className="text-on-surface-variant font-medium">{gramsToLb(w.wasteWeight)}</TableCell>
-                        <TableCell>
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
+                        <TableCell className="text-sm text-on-surface-variant tabular-nums">{gramsToLb(w.inputWeight)}</TableCell>
+                        <TableCell className="text-sm text-on-surface-variant tabular-nums">{gramsToLb(w.outputWeight)}</TableCell>
+                        <TableCell className="text-sm font-medium text-on-surface tabular-nums">{gramsToLb(w.wasteWeight)}</TableCell>
+                        <TableCell className="text-right">
+                          <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md ${
                             w.wastePercentage > 15 ? "bg-error/10 text-error" :
                             w.wastePercentage > 10 ? "bg-amber-500/10 text-amber-700" :
                             "bg-emerald-500/10 text-emerald-700"
@@ -229,24 +276,42 @@ export default function ReportsPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="usage" className="mt-4">
-          <Card className="rounded-2xl border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold text-on-surface">Processing Volume (Last 30 Days)</CardTitle>
+        {/* ── Usage Tab ── */}
+        <TabsContent value="usage" className="mt-5">
+          <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-on-surface-variant" />
+                <div>
+                  <CardTitle className="text-sm font-semibold text-on-surface">Processing Volume</CardTitle>
+                  <p className="text-xs text-on-surface-variant mt-0.5">Last 30 days</p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-sm text-on-surface-variant">Loading...</p>
+                <div className="h-72 flex items-center justify-center">
+                  <p className="text-sm text-on-surface-variant">Loading...</p>
+                </div>
               ) : usage.length === 0 ? (
-                <p className="text-sm text-on-surface-variant">No usage data yet.</p>
+                <div className="h-72 flex items-center justify-center">
+                  <p className="text-sm text-on-surface-variant">No usage data yet.</p>
+                </div>
               ) : (
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={usage}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#eaeff1" vertical={false} />
-                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#586064" }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 12, fill: "#586064" }} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--outline-variant) / 0.15)" vertical={false} />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6b7280" }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} axisLine={false} tickLine={false} />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: 8,
+                          border: "1px solid hsl(var(--outline-variant) / 0.15)",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                          fontSize: 13,
+                        }}
+                      />
                       <Line type="monotone" dataKey="count" stroke="#0055d7" strokeWidth={2} dot={{ r: 3, fill: "#0055d7" }} name="Steps" />
                     </LineChart>
                   </ResponsiveContainer>
@@ -256,39 +321,43 @@ export default function ReportsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="dispatch" className="mt-4">
-          <Card className="rounded-2xl border-0 shadow-sm">
+        {/* ── Dispatch Tab ── */}
+        <TabsContent value="dispatch" className="mt-5">
+          <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-on-surface">Dispatch Log</CardTitle>
+              <div className="flex items-center gap-2">
+                <Truck className="h-4 w-4 text-on-surface-variant" />
+                <CardTitle className="text-sm font-semibold text-on-surface">Dispatch Log</CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Request #</TableHead>
-                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Restaurant</TableHead>
-                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Status</TableHead>
-                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Items</TableHead>
-                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Dispatched</TableHead>
-                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Delivered</TableHead>
+                  <TableRow className="border-outline-variant/15 hover:bg-transparent">
+                    <TableHead className="text-xs font-medium text-on-surface-variant">Request #</TableHead>
+                    <TableHead className="text-xs font-medium text-on-surface-variant">Restaurant</TableHead>
+                    <TableHead className="text-xs font-medium text-on-surface-variant">Status</TableHead>
+                    <TableHead className="text-xs font-medium text-on-surface-variant">Items</TableHead>
+                    <TableHead className="text-xs font-medium text-on-surface-variant">Dispatched</TableHead>
+                    <TableHead className="text-xs font-medium text-on-surface-variant">Delivered</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-on-surface-variant">Loading...</TableCell>
+                      <TableCell colSpan={6} className="text-center py-8 text-sm text-on-surface-variant">Loading...</TableCell>
                     </TableRow>
                   ) : dispatch.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-on-surface-variant">No dispatches yet.</TableCell>
+                      <TableCell colSpan={6} className="text-center py-8 text-sm text-on-surface-variant">No dispatches yet.</TableCell>
                     </TableRow>
                   ) : (
                     dispatch.map((d) => (
-                      <TableRow key={d.id}>
+                      <TableRow key={d.id} className="border-outline-variant/15 hover:bg-surface-container/30">
                         <TableCell className="font-mono text-sm text-on-surface">{d.requestNumber}</TableCell>
-                        <TableCell className="text-on-surface">{d.restaurant}</TableCell>
+                        <TableCell className="text-sm text-on-surface">{d.restaurant}</TableCell>
                         <TableCell><StatusBadge status={d.status} /></TableCell>
-                        <TableCell className="text-on-surface-variant">{d.itemCount}</TableCell>
+                        <TableCell className="text-sm text-on-surface-variant tabular-nums">{d.itemCount}</TableCell>
                         <TableCell className="text-sm text-on-surface-variant">
                           {d.dispatchedAt ? new Date(d.dispatchedAt).toLocaleDateString() : "\u2014"}
                         </TableCell>
