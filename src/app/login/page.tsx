@@ -49,14 +49,14 @@ function LoginChoice() {
           <div className="text-center space-y-3">
             <div className="flex items-center justify-center gap-2 mb-4">
               <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-              <span className="text-[11px] font-mono font-medium text-[#9CA3AF] uppercase tracking-[0.15em]">
+              <span className="text-[11px] font-mono font-medium text-white/50 uppercase tracking-[0.15em]">
                 Select Portal
               </span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-heading font-black text-white tracking-[-0.03em]">
               Welcome back
             </h1>
-            <p className="text-[14px] font-mono text-[#9CA3AF] max-w-sm mx-auto leading-relaxed">
+            <p className="text-[14px] font-mono text-white/60 max-w-sm mx-auto leading-relaxed">
               Choose your portal to access the dashboard
             </p>
           </div>
@@ -73,7 +73,7 @@ function LoginChoice() {
                   <h2 className="text-base font-heading font-bold text-white">
                     Warehouse
                   </h2>
-                  <p className="text-[12px] font-mono text-[#9CA3AF] leading-relaxed">
+                  <p className="text-[12px] font-mono text-white/70 leading-relaxed">
                     Central warehouse management & operations
                   </p>
                 </div>
@@ -93,7 +93,7 @@ function LoginChoice() {
                   <h2 className="text-base font-heading font-bold text-white">
                     Restaurant
                   </h2>
-                  <p className="text-[12px] font-mono text-[#9CA3AF] leading-relaxed">
+                  <p className="text-[12px] font-mono text-white/70 leading-relaxed">
                     Stock requisition & order tracking
                   </p>
                 </div>
