@@ -135,7 +135,7 @@ export default function ReportsPage() {
           {!loading && waste.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Highest Waste */}
-              <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+              <Card className="rounded-xl">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -153,7 +153,7 @@ export default function ReportsPage() {
               </Card>
 
               {/* Total Waste Mass */}
-              <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+              <Card className="rounded-xl">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -171,7 +171,7 @@ export default function ReportsPage() {
               </Card>
 
               {/* Categories Tracked */}
-              <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+              <Card className="rounded-xl">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -189,7 +189,7 @@ export default function ReportsPage() {
           )}
 
           {/* Chart */}
-          <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+          <Card className="rounded-xl">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4 text-on-surface-variant" />
@@ -234,7 +234,7 @@ export default function ReportsPage() {
 
           {/* Categorical Breakdown Table */}
           {!loading && waste.length > 0 && (
-            <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+            <Card className="rounded-xl">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold text-on-surface">Categorical Breakdown</CardTitle>
               </CardHeader>
@@ -278,7 +278,7 @@ export default function ReportsPage() {
 
         {/* ── Usage Tab ── */}
         <TabsContent value="usage" className="mt-5">
-          <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+          <Card className="rounded-xl">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-on-surface-variant" />
@@ -312,7 +312,7 @@ export default function ReportsPage() {
                           fontSize: 13,
                         }}
                       />
-                      <Line type="monotone" dataKey="count" stroke="#0055d7" strokeWidth={2} dot={{ r: 3, fill: "#0055d7" }} name="Steps" />
+                      <Line type="monotone" dataKey="count" stroke="#E8532E" strokeWidth={2} dot={{ r: 3, fill: "#E8532E" }} name="Steps" />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -323,7 +323,7 @@ export default function ReportsPage() {
 
         {/* ── Dispatch Tab ── */}
         <TabsContent value="dispatch" className="mt-5">
-          <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+          <Card className="rounded-xl">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-on-surface-variant" />
