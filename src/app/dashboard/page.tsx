@@ -55,7 +55,7 @@ export default async function WarehouseDashboard() {
     <AppShell title="Dashboard">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-on-surface tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-on-surface tracking-tight">Dashboard</h1>
         <p className="text-sm text-on-surface-variant mt-1">Central warehouse operations overview</p>
       </div>
 
@@ -94,48 +94,59 @@ export default async function WarehouseDashboard() {
       {/* Two-Column Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity */}
-        <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-on-surface">Recent Activity</CardTitle>
+        <Card className="rounded-xl">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-base font-semibold text-on-surface">Recent Activity</CardTitle>
+            <span className="text-xs text-on-surface-variant">See All</span>
           </CardHeader>
           <CardContent>
             {recentSteps.length === 0 ? (
               <p className="text-sm text-on-surface-variant">No recent activity</p>
             ) : (
-              <div className="space-y-4">
-                {recentSteps.map((s, i) => (
-                  <div key={s.id} className="flex items-start gap-3">
-                    {/* Timeline */}
-                    <div className="flex flex-col items-center">
-                      <div className="w-2.5 h-2.5 rounded-full bg-tertiary mt-1 shrink-0" />
-                      {i < recentSteps.length - 1 && (
-                        <div className="w-px h-full min-h-[28px] bg-tertiary/20 mt-1" />
-                      )}
+              <div className="space-y-1">
+                {recentSteps.map((s) => {
+                  const stepColors: Record<string, string> = {
+                    BUTCHER: "bg-emerald-500",
+                    PORTION: "bg-sky-500",
+                    PACKAGE: "bg-violet-500",
+                    CUSTOM: "bg-amber-500",
+                  };
+                  const badgeColors: Record<string, string> = {
+                    BUTCHER: "bg-emerald-500/10 text-emerald-700",
+                    PORTION: "bg-sky-500/10 text-sky-700",
+                    PACKAGE: "bg-violet-500/10 text-violet-700",
+                    CUSTOM: "bg-amber-500/10 text-amber-700",
+                  };
+                  const iconColor = stepColors[s.stepType] || "bg-tertiary";
+                  const badgeStyle = badgeColors[s.stepType] || "bg-tertiary/10 text-tertiary";
+                  return (
+                    <div key={s.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-container/40 transition-colors">
+                      <div className={`w-9 h-9 ${iconColor} rounded-xl flex items-center justify-center shrink-0`}>
+                        <Scissors className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-on-surface leading-snug truncate">
+                          {s.sourceItem.name}
+                        </p>
+                        <p className="text-xs text-on-surface-variant mt-0.5">
+                          {s.performer.name} &middot; {s.startedAt.toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${badgeStyle} uppercase tracking-wide shrink-0`}>
+                        {s.stepType}
+                      </span>
                     </div>
-                    {/* Content */}
-                    <div className="flex-1 min-w-0 pb-1">
-                      <p className="text-[15px] font-medium text-on-surface leading-snug">
-                        {s.performer.name}{" "}
-                        <span className="text-on-surface-variant font-normal">
-                          {s.stepType.toLowerCase()}ed
-                        </span>{" "}
-                        &ldquo;{s.sourceItem.name}&rdquo;
-                      </p>
-                      <p className="text-sm text-on-surface-variant mt-0.5">
-                        {s.startedAt.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Pending Requests */}
-        <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+        <Card className="rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="text-lg font-semibold text-on-surface">Pending Requests</CardTitle>
+            <CardTitle className="text-base font-semibold text-on-surface">Pending Requests</CardTitle>
             <Link
               href="/requests"
               className="inline-flex items-center gap-1 text-sm text-tertiary hover:text-tertiary-dim font-medium transition-colors"
@@ -189,15 +200,17 @@ function SummaryCard({
   bgColor: string;
 }) {
   return (
-    <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+    <Card className="rounded-xl">
       <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-medium text-on-surface-variant">{label}</p>
-          <div className={`w-8 h-8 rounded-lg ${bgColor} flex items-center justify-center shrink-0`}>
-            <Icon className={`w-4 h-4 ${color}`} />
+        <div className="flex items-center gap-4">
+          <div className={`w-11 h-11 rounded-xl ${bgColor} flex items-center justify-center shrink-0`}>
+            <Icon className={`w-5 h-5 ${color}`} />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-on-surface-variant">{label}</p>
+            <p className="text-2xl font-bold text-on-surface tracking-tight leading-none mt-0.5">{value}</p>
           </div>
         </div>
-        <p className="text-2xl font-semibold text-on-surface tracking-tight">{value}</p>
       </CardContent>
     </Card>
   );

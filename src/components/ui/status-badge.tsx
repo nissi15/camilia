@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 const statusConfig: Record<string, { dot: string; bg: string; text: string }> = {
   // Item statuses
-  RECEIVED: { dot: "bg-tertiary", bg: "bg-tertiary/10", text: "text-tertiary" },
+  RECEIVED: { dot: "bg-sky-500", bg: "bg-sky-500/10", text: "text-sky-700" },
   IN_PROCESSING: { dot: "bg-amber-500", bg: "bg-amber-500/10", text: "text-amber-700" },
   PROCESSED: { dot: "bg-emerald-500", bg: "bg-emerald-500/10", text: "text-emerald-700" },
   PACKAGED: { dot: "bg-emerald-600", bg: "bg-emerald-600/10", text: "text-emerald-700" },
@@ -12,12 +12,12 @@ const statusConfig: Record<string, { dot: string; bg: string; text: string }> = 
 
   // Request statuses
   PENDING: { dot: "bg-amber-500", bg: "bg-amber-500/10", text: "text-amber-700" },
-  PACKING: { dot: "bg-tertiary", bg: "bg-tertiary/10", text: "text-tertiary" },
+  PACKING: { dot: "bg-indigo-500", bg: "bg-indigo-500/10", text: "text-indigo-700" },
   CANCELLED: { dot: "bg-error", bg: "bg-error/10", text: "text-error" },
 
   // Priorities
   LOW: { dot: "bg-on-surface-variant", bg: "bg-surface-container", text: "text-on-surface-variant" },
-  NORMAL: { dot: "bg-tertiary", bg: "bg-tertiary/10", text: "text-tertiary" },
+  NORMAL: { dot: "bg-sky-500", bg: "bg-sky-500/10", text: "text-sky-700" },
   HIGH: { dot: "bg-amber-500", bg: "bg-amber-500/10", text: "text-amber-700" },
   URGENT: { dot: "bg-error", bg: "bg-error/10", text: "text-error" },
 

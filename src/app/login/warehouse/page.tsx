@@ -47,7 +47,7 @@ function WarehouseLoginForm() {
   return (
     <div className="min-h-screen bg-[#050505] flex flex-col relative overflow-hidden">
       {/* Ambient glow */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#0055d7]/[0.04] rounded-full blur-[120px]" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#E8532E]/[0.04] rounded-full blur-[120px]" />
 
       {/* Navbar */}
       <nav className="relative z-20 flex items-center justify-between px-6 sm:px-10 lg:px-16 py-5 max-w-[1280px] mx-auto w-full">
@@ -74,8 +74,8 @@ function WarehouseLoginForm() {
         <div className="w-full max-w-sm space-y-8">
           {/* Header */}
           <div className="text-center space-y-3">
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-[#0055d7]/10 border border-[#0055d7]/20 flex items-center justify-center">
-              <Warehouse className="w-6 h-6 text-[#3B82F6]" />
+            <div className="mx-auto w-14 h-14 rounded-2xl bg-[#E8532E]/10 border border-[#E8532E]/20 flex items-center justify-center">
+              <Warehouse className="w-6 h-6 text-[#FF6B42]" />
             </div>
             <div>
               <h1 className="text-xl font-heading font-bold text-white">
@@ -108,7 +108,7 @@ function WarehouseLoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoFocus
-                  className="w-full h-11 px-4 rounded-xl bg-[#111111] border border-[#2A2A2A] text-white text-sm placeholder:text-[#555555] focus:outline-none focus:border-[#0055d7]/50 focus:ring-1 focus:ring-[#0055d7]/20 transition-all duration-200"
+                  className="w-full h-11 px-4 rounded-xl bg-[#111111] border border-[#2A2A2A] text-white text-sm placeholder:text-[#555555] focus:outline-none focus:border-[#E8532E]/50 focus:ring-1 focus:ring-[#E8532E]/20 transition-all duration-200"
                 />
               </div>
               <div className="space-y-2">
@@ -122,7 +122,7 @@ function WarehouseLoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full h-11 px-4 rounded-xl bg-[#111111] border border-[#2A2A2A] text-white text-sm placeholder:text-[#555555] focus:outline-none focus:border-[#0055d7]/50 focus:ring-1 focus:ring-[#0055d7]/20 transition-all duration-200"
+                  className="w-full h-11 px-4 rounded-xl bg-[#111111] border border-[#2A2A2A] text-white text-sm placeholder:text-[#555555] focus:outline-none focus:border-[#E8532E]/50 focus:ring-1 focus:ring-[#E8532E]/20 transition-all duration-200"
                 />
               </div>
             </div>

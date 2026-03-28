@@ -109,7 +109,7 @@ export default function RequestsPage() {
       </div>
 
       {/* Table card */}
-      <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+      <Card className="rounded-xl">
         <CardContent className="p-0">
           <Table>
             <TableHeader>

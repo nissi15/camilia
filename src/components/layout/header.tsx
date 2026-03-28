@@ -86,7 +86,7 @@ export function Header({ onMenuClick, title }: HeaderProps) {
 
   return (
     <>
-      <header className="h-14 bg-surface border-b border-outline-variant/15 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+      <header className="h-14 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -103,44 +103,49 @@ export function Header({ onMenuClick, title }: HeaderProps) {
           )}
         </div>
 
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-2">
+          {/* Search bar - Prodex style */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="hidden sm:flex items-center gap-2 h-9 px-3 rounded-xl bg-surface-container/50 border border-outline-variant/10 text-on-surface-variant/60 hover:bg-surface-container hover:border-outline-variant/20 transition-all duration-200 cursor-pointer min-w-[200px]"
+          >
+            <Search className="w-3.5 h-3.5 shrink-0" />
+            <span className="text-sm flex-1 text-left">Search anything</span>
+            <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-surface-highest/60 border border-outline-variant/10 text-[10px] font-mono font-medium text-on-surface-variant/50">
+              ⌘K
+            </kbd>
+          </button>
           <Button
             variant="ghost"
             size="icon"
-            className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg h-8 w-8"
+            className="sm:hidden text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg h-8 w-8"
             onClick={() => setSearchOpen(true)}
           >
             <Search className="w-4 h-4" />
           </Button>
+
+          {/* Notification bell with red badge */}
           <Link href="/notifications">
             <Button
               variant="ghost"
               size="icon"
-              className="relative text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg h-8 w-8"
+              className="relative text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl h-9 w-9"
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-tertiary text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
             </Button>
           </Link>
-          <Link href="/settings">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg h-8 w-8"
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
-          </Link>
 
-          <div className="w-px h-5 bg-outline-variant/15 mx-2" />
+          <div className="w-px h-5 bg-outline-variant/10 mx-0.5" />
 
+          {/* User avatar + sign out */}
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-tertiary/10 flex items-center justify-center">
-              <span className="text-[11px] font-semibold text-tertiary">
+            <div className="w-8 h-8 rounded-full bg-tertiary/10 flex items-center justify-center ring-2 ring-tertiary/20">
+              <span className="text-[11px] font-bold text-tertiary">
                 {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
               </span>
             </div>
@@ -151,7 +156,6 @@ export function Header({ onMenuClick, title }: HeaderProps) {
               className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg text-xs h-7 px-2 gap-1.5"
             >
               <LogOut className="w-3.5 h-3.5" />
-              Sign out
             </Button>
           </div>
         </div>

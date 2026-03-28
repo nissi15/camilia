@@ -158,15 +158,15 @@ export default function CategoriesPage() {
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3 mt-5">
-          <div className="bg-white rounded-xl p-4 border border-outline-variant/15 shadow-sm">
+          <div className="bg-white rounded-xl p-4">
             <p className="text-2xl font-bold text-on-surface tracking-tight">{totalCategories}</p>
             <p className="text-xs text-on-surface-variant font-medium mt-0.5">Total Categories</p>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-outline-variant/15 shadow-sm">
+          <div className="bg-white rounded-xl p-4">
             <p className="text-2xl font-bold text-tertiary tracking-tight">{topLevel}</p>
             <p className="text-xs text-on-surface-variant font-medium mt-0.5">Top-level Groups</p>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-outline-variant/15 shadow-sm">
+          <div className="bg-white rounded-xl p-4">
             <p className="text-2xl font-bold text-on-surface tracking-tight">{subCategories}</p>
             <p className="text-xs text-on-surface-variant font-medium mt-0.5">Sub-categories</p>
           </div>
@@ -360,7 +360,7 @@ function CategoryGridCard({
   const hasChildren = category.children && category.children.length > 0;
 
   return (
-    <div className="group flex flex-col bg-white rounded-2xl border border-outline-variant/15 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+    <div className="group flex flex-col bg-white rounded-2xl hover:shadow-md transition-all duration-200 overflow-hidden">
       {/* Color stripe */}
       <div className={cn("h-1.5 w-full", color.bg)} />
 
@@ -450,7 +450,7 @@ function CategoryListView({
   onAddChild: (parentId: string) => void;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-outline-variant/15 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="grid grid-cols-[1fr_auto_auto] gap-4 px-5 py-2.5 bg-surface-container/50 border-b border-outline-variant/10">
         <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Category</span>
