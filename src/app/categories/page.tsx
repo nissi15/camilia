@@ -34,19 +34,17 @@ interface FlatCategory {
   parentId: string | null;
 }
 
-const NODE_COLORS = [
-  { bg: "bg-blue-500",   ring: "ring-blue-200",   line: "bg-blue-200",   light: "bg-blue-50",   text: "text-blue-700",   accent: "#3b82f6" },
-  { bg: "bg-emerald-500",ring: "ring-emerald-200", line: "bg-emerald-200",light: "bg-emerald-50",text: "text-emerald-700",accent: "#10b981" },
-  { bg: "bg-amber-500",  ring: "ring-amber-200",   line: "bg-amber-200",  light: "bg-amber-50",  text: "text-amber-700",  accent: "#f59e0b" },
-  { bg: "bg-violet-500", ring: "ring-violet-200",  line: "bg-violet-200", light: "bg-violet-50", text: "text-violet-700", accent: "#8b5cf6" },
-  { bg: "bg-rose-500",   ring: "ring-rose-200",    line: "bg-rose-200",   light: "bg-rose-50",   text: "text-rose-700",   accent: "#f43f5e" },
-  { bg: "bg-cyan-500",   ring: "ring-cyan-200",    line: "bg-cyan-200",   light: "bg-cyan-50",   text: "text-cyan-700",   accent: "#06b6d4" },
-  { bg: "bg-orange-500", ring: "ring-orange-200",  line: "bg-orange-200", light: "bg-orange-50", text: "text-orange-700", accent: "#f97316" },
-  { bg: "bg-indigo-500", ring: "ring-indigo-200",  line: "bg-indigo-200", light: "bg-indigo-50", text: "text-indigo-700", accent: "#6366f1" },
-];
+const NODE_COLOR = {
+  bg: "bg-tertiary",
+  ring: "ring-tertiary/20",
+  line: "bg-tertiary/20",
+  light: "bg-tertiary/8",
+  text: "text-tertiary",
+  accent: "#2A7D6E",
+};
 
-function getColor(index: number) {
-  return NODE_COLORS[index % NODE_COLORS.length];
+function getColor(_index: number) {
+  return NODE_COLOR;
 }
 
 export default function CategoriesPage() {
@@ -149,7 +147,7 @@ export default function CategoriesPage() {
           </div>
           <Button
             onClick={() => openCreate()}
-            className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl h-9 px-4 text-sm font-medium shrink-0 shadow-sm shadow-tertiary/30"
+            className="bg-tertiary hover:bg-tertiary/90 text-white rounded-xl h-9 px-4 text-sm font-medium shrink-0 "
           >
             <Plus className="w-4 h-4 mr-1.5" />
             New Category
@@ -158,15 +156,15 @@ export default function CategoriesPage() {
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3 mt-5">
-          <div className="bg-white rounded-xl p-4 border border-outline-variant/15 shadow-sm">
+          <div className="bg-white rounded-xl p-4 border border-outline-variant/15 ">
             <p className="text-2xl font-bold text-on-surface tracking-tight">{totalCategories}</p>
             <p className="text-xs text-on-surface-variant font-medium mt-0.5">Total Categories</p>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-outline-variant/15 shadow-sm">
+          <div className="bg-white rounded-xl p-4 border border-outline-variant/15 ">
             <p className="text-2xl font-bold text-tertiary tracking-tight">{topLevel}</p>
             <p className="text-xs text-on-surface-variant font-medium mt-0.5">Top-level Groups</p>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-outline-variant/15 shadow-sm">
+          <div className="bg-white rounded-xl p-4 border border-outline-variant/15 ">
             <p className="text-2xl font-bold text-on-surface tracking-tight">{subCategories}</p>
             <p className="text-xs text-on-surface-variant font-medium mt-0.5">Sub-categories</p>
           </div>
@@ -221,7 +219,7 @@ export default function CategoriesPage() {
               {searchQuery ? "Try a different search term" : "Create your first category to start organizing"}
             </p>
             {!searchQuery && (
-              <Button onClick={() => openCreate()} className="bg-tertiary text-white rounded-xl h-9 shadow-sm shadow-tertiary/30">
+              <Button onClick={() => openCreate()} className="bg-tertiary text-white rounded-xl h-9 ">
                 <Plus className="w-4 h-4 mr-1.5" /> Create Category
               </Button>
             )}
@@ -330,7 +328,7 @@ export default function CategoriesPage() {
             </div>
             <Button
               onClick={handleSave}
-              className="w-full bg-tertiary hover:bg-tertiary/90 text-white rounded-xl h-9 mt-2 shadow-sm shadow-tertiary/30"
+              className="w-full bg-tertiary hover:bg-tertiary/90 text-white rounded-xl h-9 mt-2 "
             >
               {editId ? "Save Changes" : "Create Category"}
             </Button>
@@ -360,10 +358,7 @@ function CategoryGridCard({
   const hasChildren = category.children && category.children.length > 0;
 
   return (
-    <div className="group flex flex-col bg-white rounded-2xl border border-outline-variant/15 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-      {/* Color stripe */}
-      <div className={cn("h-1.5 w-full", color.bg)} />
-
+    <div className="group flex flex-col bg-white rounded-2xl border border-outline-variant/15 transition-colors duration-200 overflow-hidden hover:border-tertiary/30">
       <div className="flex flex-col flex-1 p-5">
         {/* Header */}
         <div className="flex items-start gap-3 mb-3">
@@ -450,7 +445,7 @@ function CategoryListView({
   onAddChild: (parentId: string) => void;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-outline-variant/15 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-outline-variant/15  overflow-hidden">
       {/* Header */}
       <div className="grid grid-cols-[1fr_auto_auto] gap-4 px-5 py-2.5 bg-surface-container/50 border-b border-outline-variant/10">
         <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Category</span>
@@ -621,7 +616,7 @@ function MindMapBranch({
         <div className="relative z-10 mr-3 shrink-0">
           {isRoot ? (
             <div className={cn(
-              "w-9 h-9 rounded-xl flex items-center justify-center ring-4 shadow-sm",
+              "w-9 h-9 rounded-xl flex items-center justify-center ring-4 ",
               color.bg, color.ring
             )}>
               <Tags className="w-4 h-4 text-white" />
@@ -645,7 +640,7 @@ function MindMapBranch({
         <div className={cn(
           "flex items-center gap-3 py-2 px-3 rounded-xl transition-all flex-1 min-w-0",
           isRoot
-            ? "bg-white shadow-sm border border-outline-variant/15 hover:shadow-md"
+            ? "bg-white  border border-outline-variant/15 hover:shadow-md"
             : "hover:bg-surface-container/50"
         )}>
           <div className="flex-1 min-w-0">

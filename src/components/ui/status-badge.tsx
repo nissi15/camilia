@@ -1,29 +1,29 @@
 import { cn } from "@/lib/utils";
 
 const statusConfig: Record<string, { dot: string; bg: string; text: string }> = {
-  // Item statuses
-  RECEIVED: { dot: "bg-tertiary", bg: "bg-tertiary/10", text: "text-tertiary" },
-  IN_PROCESSING: { dot: "bg-amber-500", bg: "bg-amber-500/10", text: "text-amber-700" },
-  PROCESSED: { dot: "bg-emerald-500", bg: "bg-emerald-500/10", text: "text-emerald-700" },
-  PACKAGED: { dot: "bg-emerald-600", bg: "bg-emerald-600/10", text: "text-emerald-700" },
-  DISPATCHED: { dot: "bg-violet-500", bg: "bg-violet-500/10", text: "text-violet-700" },
-  DELIVERED: { dot: "bg-emerald-500", bg: "bg-emerald-500/10", text: "text-emerald-700" },
-  WASTE: { dot: "bg-error", bg: "bg-error/10", text: "text-error" },
+  // Item statuses - mostly muted
+  RECEIVED: { dot: "bg-tertiary", bg: "bg-tertiary/8", text: "text-tertiary" },
+  IN_PROCESSING: { dot: "bg-slate-400", bg: "bg-slate-100", text: "text-slate-600" },
+  PROCESSED: { dot: "bg-tertiary", bg: "bg-tertiary/8", text: "text-tertiary" },
+  PACKAGED: { dot: "bg-slate-500", bg: "bg-slate-100", text: "text-slate-600" },
+  DISPATCHED: { dot: "bg-slate-400", bg: "bg-slate-100", text: "text-slate-600" },
+  DELIVERED: { dot: "bg-tertiary", bg: "bg-tertiary/8", text: "text-tertiary" },
+  WASTE: { dot: "bg-error", bg: "bg-error/8", text: "text-error" },
 
   // Request statuses
-  PENDING: { dot: "bg-amber-500", bg: "bg-amber-500/10", text: "text-amber-700" },
-  PACKING: { dot: "bg-tertiary", bg: "bg-tertiary/10", text: "text-tertiary" },
-  CANCELLED: { dot: "bg-error", bg: "bg-error/10", text: "text-error" },
+  PENDING: { dot: "bg-amber-500", bg: "bg-amber-50", text: "text-amber-700" },
+  PACKING: { dot: "bg-slate-400", bg: "bg-slate-100", text: "text-slate-600" },
+  CANCELLED: { dot: "bg-error", bg: "bg-error/8", text: "text-error" },
 
-  // Priorities
-  LOW: { dot: "bg-on-surface-variant", bg: "bg-surface-container", text: "text-on-surface-variant" },
-  NORMAL: { dot: "bg-tertiary", bg: "bg-tertiary/10", text: "text-tertiary" },
-  HIGH: { dot: "bg-amber-500", bg: "bg-amber-500/10", text: "text-amber-700" },
-  URGENT: { dot: "bg-error", bg: "bg-error/10", text: "text-error" },
+  // Priorities - only urgent gets bold color
+  LOW: { dot: "bg-slate-300", bg: "bg-slate-50", text: "text-slate-500" },
+  NORMAL: { dot: "bg-slate-400", bg: "bg-slate-100", text: "text-slate-600" },
+  HIGH: { dot: "bg-amber-500", bg: "bg-amber-50", text: "text-amber-700" },
+  URGENT: { dot: "bg-error", bg: "bg-error/8", text: "text-error" },
 
   // Request item statuses
-  FULFILLED: { dot: "bg-emerald-500", bg: "bg-emerald-500/10", text: "text-emerald-700" },
-  UNAVAILABLE: { dot: "bg-error", bg: "bg-error/10", text: "text-error" },
+  FULFILLED: { dot: "bg-tertiary", bg: "bg-tertiary/8", text: "text-tertiary" },
+  UNAVAILABLE: { dot: "bg-error", bg: "bg-error/8", text: "text-error" },
 };
 
 const statusLabels: Record<string, string> = {

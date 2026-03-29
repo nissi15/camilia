@@ -113,7 +113,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         {/* Logo area */}
         <div className="flex items-center justify-between h-14 px-5">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-tertiary flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#2A7D6E] flex items-center justify-center">
               <Warehouse className="w-4 h-4 text-white" />
             </div>
             <div>

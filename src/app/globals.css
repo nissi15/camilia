@@ -60,8 +60,8 @@
   --color-on-surface-variant: #414950;
   --color-outline: #737c7f;
   --color-outline-variant: #abb3b7;
-  --color-tertiary: #0055d7;
-  --color-tertiary-dim: #004abe;
+  --color-tertiary: #2A7D6E;
+  --color-tertiary-dim: #1F6357;
   --color-on-tertiary: #f9f8ff;
   --color-error: #9f403d;
   --color-error-container: #fe8983;
@@ -94,21 +94,21 @@
   --destructive: #9f403d;
   --border: #dbe4e7;
   --input: #dbe4e7;
-  --ring: #0055d7;
-  --chart-1: #0055d7;
+  --ring: #2A7D6E;
+  --chart-1: #2A7D6E;
   --chart-2: #5f5e5e;
-  --chart-3: #9f403d;
+  --chart-3: #3D8B7A;
   --chart-4: #536073;
-  --chart-5: #0266ff;
+  --chart-5: #1A6B5A;
   --radius: 0.625rem;
   --sidebar: #1a1d23;
   --sidebar-foreground: #a0a4ad;
-  --sidebar-primary: #0055d7;
+  --sidebar-primary: #2A7D6E;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #2a2d36;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #2e3139;
-  --sidebar-ring: #0055d7;
+  --sidebar-ring: #2A7D6E;
 }
 
 @layer base {
@@ -127,7 +127,7 @@
     @apply font-sans;
   }
   h1, h2, h3, h4, h5, h6 {
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     color: var(--color-on-surface);
   }
   p {

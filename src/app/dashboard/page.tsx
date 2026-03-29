@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Package, ClipboardList, Scissors, Trash2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default async function WarehouseDashboard() {
   const session = await auth();
@@ -59,42 +60,22 @@ export default async function WarehouseDashboard() {
         <p className="text-sm text-on-surface-variant mt-1">Central warehouse operations overview</p>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <SummaryCard
-          label="Total Stock"
-          value={String(totalStock)}
-          icon={Package}
-          color="text-tertiary"
-          bgColor="bg-tertiary/10"
-        />
-        <SummaryCard
-          label="Pending Requests"
-          value={String(pendingRequests)}
-          icon={ClipboardList}
-          color="text-amber-600"
-          bgColor="bg-amber-500/10"
-        />
-        <SummaryCard
-          label="Processed Today"
-          value={String(processedToday)}
-          icon={Scissors}
-          color="text-emerald-600"
-          bgColor="bg-emerald-500/10"
-        />
-        <SummaryCard
-          label="Waste % This Week"
-          value={`${wastePercentage.toFixed(1)}%`}
-          icon={Trash2}
-          color="text-error"
-          bgColor="bg-error/10"
-        />
-      </div>
+      {/* Unified Metrics Bar */}
+      <Card className="rounded-xl border border-outline-variant/15 mb-8">
+        <CardContent className="p-0">
+          <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-outline-variant/10">
+            <MetricCell icon={Package} label="Total Stock" value={String(totalStock)} />
+            <MetricCell icon={ClipboardList} label="Pending Requests" value={String(pendingRequests)} />
+            <MetricCell icon={Scissors} label="Processed Today" value={String(processedToday)} />
+            <MetricCell icon={Trash2} label="Waste % This Week" value={`${wastePercentage.toFixed(1)}%`} accent={wastePercentage > 5} />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Two-Column Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity */}
-        <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+        <Card className="rounded-xl border border-outline-variant/15">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-semibold text-on-surface">Recent Activity</CardTitle>
           </CardHeader>

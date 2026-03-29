@@ -60,16 +60,16 @@ function getNotificationIcon(type: string) {
 function getIconContainerClass(type: string) {
   switch (type) {
     case "EXPIRY_WARNING":
-      return "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400";
+      return "bg-amber-50 text-amber-600";
     case "LOW_STOCK":
-      return "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400";
+      return "bg-amber-50 text-amber-500";
     case "REQUEST_CREATED":
     case "REQUEST_STATUS_CHANGED":
       return "bg-tertiary/10 text-tertiary";
     case "DELIVERY_CONFIRMED":
-      return "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400";
+      return "bg-tertiary/10 text-tertiary";
     case "NEW_MESSAGE":
-      return "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400";
+      return "bg-tertiary/10 text-tertiary";
     case "SYSTEM":
     default:
       return "bg-surface-container text-on-surface-variant";
@@ -194,7 +194,7 @@ export default function NotificationsPage() {
               flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all
               ${
                 activeFilter === tab.value
-                  ? "bg-surface-lowest text-on-surface shadow-sm"
+                  ? "bg-surface-lowest text-on-surface"
                   : "text-on-surface-variant hover:text-on-surface"
               }
             `}
@@ -208,7 +208,7 @@ export default function NotificationsPage() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="rounded-2xl border-0 shadow-sm">
+            <Card key={i} className="rounded-2xl border-0">
               <CardContent className="p-4">
                 <div className="flex items-start gap-4 animate-pulse">
                   <div className="w-10 h-10 rounded-full bg-surface-container" />
@@ -242,9 +242,9 @@ export default function NotificationsPage() {
               <Card
                 key={notification.id}
                 className={`
-                  rounded-2xl border-0 shadow-sm transition-all
+                  rounded-2xltransition-all
                   ${isUnread ? "bg-surface-lowest" : "bg-surface"}
-                  ${notification.href ? "cursor-pointer hover:shadow-md" : ""}
+                  ${notification.href ? "cursor-pointer hover:bg-surface-container/30" : ""}
                 `}
                 onClick={() => handleNotificationClick(notification)}
                 onMouseEnter={() => setHoveredId(notification.id)}
