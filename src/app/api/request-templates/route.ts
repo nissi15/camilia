@@ -17,7 +17,14 @@ export async function GET(req: NextRequest) {
   const { error, user } = await requireDualAuth(req);
   if (error) return error;
 
-  const restaurantId = req.nextUrl.searchParams.get("restaurantId") || user!.locationId;
+  // Restaurant staff can only see their own templates
+  // Warehouse admin can see all or filter by restaurantId
+  let restaurantId: string | null = null;
+  if (user!.role === "RESTAURANT_STAFF") {
+    restaurantId = user!.locationId!;
+  } else {
+    restaurantId = req.nextUrl.searchParams.get("restaurantId") || null;
+  }
 
   const templates = await prisma.requestTemplate.findMany({
     where: restaurantId ? { restaurantId } : {},

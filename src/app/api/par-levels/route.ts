@@ -14,7 +14,14 @@ export async function GET(req: NextRequest) {
   const { error, user } = await requireDualAuth(req);
   if (error) return error;
 
-  const restaurantId = req.nextUrl.searchParams.get("restaurantId") || user!.locationId;
+  // Restaurant staff can only see their own par levels
+  // Warehouse admin can see all or filter by restaurantId
+  let restaurantId: string | null = null;
+  if (user!.role === "RESTAURANT_STAFF") {
+    restaurantId = user!.locationId!;
+  } else {
+    restaurantId = req.nextUrl.searchParams.get("restaurantId") || null;
+  }
 
   const parLevels = await prisma.parLevel.findMany({
     where: restaurantId ? { restaurantId } : {},

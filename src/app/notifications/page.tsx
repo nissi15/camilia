@@ -153,7 +153,7 @@ export default function NotificationsPage() {
     if (!notification.readAt) {
       markAsRead(notification.id);
     }
-    if (notification.href) {
+    if (notification.href && /^\/[a-zA-Z0-9\-_\/\?\=\&\#]*$/.test(notification.href)) {
       router.push(notification.href);
     }
   };

@@ -13,8 +13,8 @@ export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const status = searchParams.get("status");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
+    const limit = Math.max(1, Math.min(parseInt(searchParams.get("limit") || "20") || 20, 100));
 
     const where: Record<string, unknown> = {};
 

@@ -7,8 +7,8 @@ export async function GET(req: NextRequest) {
   if (error) return error;
 
   const searchParams = req.nextUrl.searchParams;
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
+  const limit = Math.max(1, Math.min(parseInt(searchParams.get("limit") || "20") || 20, 100));
   const filter = searchParams.get("filter"); // "read" | "unread" | null (all)
 
   const where: Record<string, unknown> = {
@@ -62,6 +62,18 @@ export async function POST(req: Request) {
       { error: "Missing required fields: userId, type, title, body" },
       { status: 400 }
     );
+  }
+
+  if (typeof title !== "string" || title.length > 200) {
+    return NextResponse.json({ error: "Title must be a string of 200 characters or less" }, { status: 400 });
+  }
+
+  if (typeof notifBody !== "string" || notifBody.length > 1000) {
+    return NextResponse.json({ error: "Body must be a string of 1000 characters or less" }, { status: 400 });
+  }
+
+  if (href && (typeof href !== "string" || href.length > 500)) {
+    return NextResponse.json({ error: "href must be a string of 500 characters or less" }, { status: 400 });
   }
 
   const validTypes = [

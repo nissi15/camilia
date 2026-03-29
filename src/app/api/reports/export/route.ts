@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   if (error) return error;
 
   const type = req.nextUrl.searchParams.get("type") || "waste";
-  const days = parseInt(req.nextUrl.searchParams.get("days") || "30");
+  const days = Math.max(1, Math.min(parseInt(req.nextUrl.searchParams.get("days") || "30") || 30, 365));
 
   const since = new Date();
   since.setDate(since.getDate() - days);

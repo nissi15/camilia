@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     ],
   };
 
-  if (session!.user.role === "WAREHOUSE_ADMIN" && session!.user.locationId) {
+  if (session!.user.role === "RESTAURANT_STAFF" && session!.user.locationId) {
     inventoryWhere.locationId = session!.user.locationId;
   }
 

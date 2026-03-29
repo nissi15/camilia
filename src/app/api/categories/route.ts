@@ -28,8 +28,16 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { name, parentId, description } = body;
 
-  if (!name) {
+  if (!name || typeof name !== "string") {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
+
+  if (name.length > 100) {
+    return NextResponse.json({ error: "Name must be 100 characters or less" }, { status: 400 });
+  }
+
+  if (description && typeof description === "string" && description.length > 500) {
+    return NextResponse.json({ error: "Description must be 500 characters or less" }, { status: 400 });
   }
 
   const category = await prisma.category.create({

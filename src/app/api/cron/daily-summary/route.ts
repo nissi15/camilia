@@ -6,7 +6,11 @@ import { formatRwf } from "@/lib/constants";
 export async function GET(req: NextRequest) {
   // Validate cron secret (for Vercel Cron or external scheduler)
   const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET || process.env.TELEGRAM_WEBHOOK_SECRET;
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error("CRON_SECRET environment variable is not set");
+    return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+  }
   if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
