@@ -166,6 +166,32 @@ export default async function WarehouseDashboard() {
   );
 }
 
+function MetricCell({
+  icon: Icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-4 px-6 py-5">
+      <div className="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+        <Icon className={`w-4 h-4 ${accent ? "text-error" : "text-on-surface-variant"}`} />
+      </div>
+      <div>
+        <p className="text-xs font-medium text-on-surface-variant">{label}</p>
+        <p className={`text-2xl font-bold tracking-tight leading-none mt-0.5 ${accent ? "text-error" : "text-on-surface"}`}>
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function SummaryCard({
   label,
   value,
