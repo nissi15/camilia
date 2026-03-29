@@ -7,8 +7,8 @@ export async function GET(req: NextRequest) {
   if (error) return error;
 
   const searchParams = req.nextUrl.searchParams;
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
+  const limit = Math.max(1, Math.min(parseInt(searchParams.get("limit") || "20") || 20, 100));
 
   const [dispatches, total] = await Promise.all([
     prisma.request.findMany({

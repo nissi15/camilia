@@ -20,6 +20,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 400 });
   }
 
+  const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf"];
+  if (!allowedMimeTypes.includes(file.type)) {
+    return NextResponse.json(
+      { error: `File type not allowed. Accepted: ${allowedMimeTypes.join(", ")}` },
+      { status: 400 }
+    );
+  }
+
+  if (context.length > 50 || entityId.length > 100) {
+    return NextResponse.json({ error: "Invalid context or entityId length" }, { status: 400 });
+  }
+
   const url = await saveUploadedFile(file, context);
 
   const photo = await prisma.photo.create({

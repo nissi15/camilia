@@ -41,6 +41,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params;
   const body = await req.json();
 
+  // Validate string fields
+  if (body.name !== undefined && (typeof body.name !== "string" || body.name.length > 200)) {
+    return NextResponse.json({ error: "Name must be a string of 200 characters or less" }, { status: 400 });
+  }
+  if (body.notes !== undefined && (typeof body.notes !== "string" || body.notes.length > 1000)) {
+    return NextResponse.json({ error: "Notes must be a string of 1000 characters or less" }, { status: 400 });
+  }
+  if (body.supplier !== undefined && (typeof body.supplier !== "string" || body.supplier.length > 200)) {
+    return NextResponse.json({ error: "Supplier must be a string of 200 characters or less" }, { status: 400 });
+  }
+  if (body.expiresAt !== undefined) {
+    const parsed = new Date(body.expiresAt);
+    if (isNaN(parsed.getTime())) {
+      return NextResponse.json({ error: "Invalid expiresAt date" }, { status: 400 });
+    }
+  }
+
   const item = await prisma.inventoryItem.update({
     where: { id },
     data: {

@@ -4,7 +4,19 @@ import type { NextAuthConfig } from "next-auth";
 // It must NOT import Prisma or any Node.js-only modules
 export const authConfig: NextAuthConfig = {
   trustHost: true,
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 8 * 60 * 60, // 8 hours
+  },
+  cookies: {
+    sessionToken: {
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
   pages: {
     signIn: "/login",
   },

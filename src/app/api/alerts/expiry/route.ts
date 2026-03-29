@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   if (error) return error;
 
   const searchParams = req.nextUrl.searchParams;
-  const days = parseInt(searchParams.get("days") || "7");
+  const days = Math.max(1, Math.min(parseInt(searchParams.get("days") || "7") || 7, 365));
 
   const now = new Date();
   const criticalThreshold = new Date(now);
