@@ -48,13 +48,13 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* Material Design 3 inspired palette */
-  --color-surface: #f8f9fa;
-  --color-surface-dim: #d1dce0;
-  --color-surface-low: #f1f4f6;
-  --color-surface-container: #eaeff1;
-  --color-surface-high: #e2e9ec;
-  --color-surface-highest: #dbe4e7;
+  /* Material Design 3 inspired palette — warm neutral */
+  --color-surface: #FAF9F7;
+  --color-surface-dim: #D8D3CC;
+  --color-surface-low: #F5F3F0;
+  --color-surface-container: #EFECE8;
+  --color-surface-high: #E7E3DD;
+  --color-surface-highest: #DDD8D2;
   --color-surface-lowest: #ffffff;
   --color-on-surface: #1a1f22;
   --color-on-surface-variant: #414950;
@@ -67,6 +67,12 @@
   --color-error-container: #fe8983;
   --color-on-error: #fff7f6;
 
+  /* Premium design tokens */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.04);
+  --shadow-elevated: 0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+
   /* Dark sidebar */
   --color-sidebar-dark: #1a1d23;
   --color-sidebar-dark-hover: #252830;
@@ -77,20 +83,20 @@
 }
 
 :root {
-  --background: #f8f9fa;
-  --foreground: #1a1f22;
+  --background: #FAF9F7;
+  --foreground: #1A1815;
   --card: #ffffff;
-  --card-foreground: #1a1f22;
+  --card-foreground: #1A1815;
   --popover: #ffffff;
-  --popover-foreground: #1a1f22;
-  --primary: #5f5e5e;
-  --primary-foreground: #faf7f6;
+  --popover-foreground: #1A1815;
+  --primary: #E8532E;
+  --primary-foreground: #ffffff;
   --secondary: #536073;
   --secondary-foreground: #f8f8ff;
-  --muted: #eaeff1;
-  --muted-foreground: #414950;
-  --accent: #e2e9ec;
-  --accent-foreground: #2b3437;
+  --muted: #EFECE8;
+  --muted-foreground: #4A4540;
+  --accent: #F0EBE5;
+  --accent-foreground: #2B2520;
   --destructive: #9f403d;
   --border: #dbe4e7;
   --input: #dbe4e7;

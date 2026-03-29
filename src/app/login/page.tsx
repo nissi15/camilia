@@ -66,8 +66,8 @@ function LoginChoice() {
             {/* Warehouse card */}
             <Link href={`/login/warehouse${qs}`} className="group">
               <div className="relative rounded-2xl border border-[#2A2A2A] bg-[#111111] p-8 transition-all duration-300 hover:border-[#E8532E]/40 hover:bg-[#161616] cursor-pointer h-full flex flex-col items-center text-center space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-[#0055d7]/15 border border-[#0055d7]/25 flex items-center justify-center group-hover:bg-[#0055d7]/20 group-hover:border-[#0055d7]/40 transition-all duration-300">
-                  <Warehouse className="w-6 h-6 text-[#3B82F6]" />
+                <div className="w-14 h-14 rounded-2xl bg-[#E8532E]/15 border border-[#E8532E]/25 flex items-center justify-center group-hover:bg-[#E8532E]/20 group-hover:border-[#E8532E]/40 transition-all duration-300">
+                  <Warehouse className="w-6 h-6 text-[#FF6B42]" />
                 </div>
                 <div className="space-y-1.5">
                   <h2 className="text-base font-heading font-bold text-white">

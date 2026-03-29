@@ -61,32 +61,32 @@ export default function StockPage() {
   return (
     <div className="p-4">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+        <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center shadow-sm">
           <Package className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Stock Check</h1>
-          <p className="text-xs text-gray-500">Current inventory levels</p>
+          <h1 className="text-lg font-bold text-on-surface">Stock Check</h1>
+          <p className="text-xs text-on-surface-variant">Current inventory levels</p>
         </div>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="bg-white rounded-xl p-3 text-center shadow-sm">
-          <p className="text-2xl font-bold text-gray-900">{totalItems}</p>
-          <p className="text-[10px] text-gray-500 font-medium">Total Units</p>
+        <div className="bg-white rounded-xl p-3 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] border border-black/[0.04]">
+          <p className="text-2xl font-bold text-on-surface">{totalItems}</p>
+          <p className="text-[10px] text-on-surface-variant font-medium">Total Units</p>
         </div>
-        <div className={`rounded-xl p-3 text-center shadow-sm ${belowParCount > 0 ? "bg-red-50" : "bg-white"}`}>
-          <p className={`text-2xl font-bold ${belowParCount > 0 ? "text-red-600" : "text-gray-900"}`}>
+        <div className={`rounded-xl p-3 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] border border-black/[0.04] ${belowParCount > 0 ? "bg-red-50" : "bg-white"}`}>
+          <p className={`text-2xl font-bold ${belowParCount > 0 ? "text-red-600" : "text-on-surface"}`}>
             {belowParCount}
           </p>
-          <p className="text-[10px] text-gray-500 font-medium">Below Par</p>
+          <p className="text-[10px] text-on-surface-variant font-medium">Below Par</p>
         </div>
-        <div className={`rounded-xl p-3 text-center shadow-sm ${expiringTotal > 0 ? "bg-amber-50" : "bg-white"}`}>
-          <p className={`text-2xl font-bold ${expiringTotal > 0 ? "text-amber-600" : "text-gray-900"}`}>
+        <div className={`rounded-xl p-3 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] border border-black/[0.04] ${expiringTotal > 0 ? "bg-amber-50" : "bg-white"}`}>
+          <p className={`text-2xl font-bold ${expiringTotal > 0 ? "text-amber-600" : "text-on-surface"}`}>
             {expiringTotal}
           </p>
-          <p className="text-[10px] text-gray-500 font-medium">Expiring</p>
+          <p className="text-[10px] text-on-surface-variant font-medium">Expiring</p>
         </div>
       </div>
 
@@ -103,7 +103,7 @@ export default function StockPage() {
             const items = itemDetails[level.categoryId] || [];
 
             return (
-              <div key={level.categoryId} className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div key={level.categoryId} className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] border border-black/[0.04] overflow-hidden">
                 <button
                   onClick={() => toggleExpand(level.categoryId)}
                   className="w-full p-4 text-left flex items-center gap-3"

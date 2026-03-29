@@ -196,7 +196,7 @@ function ProcessingContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Queue Panel */}
         <div className="lg:col-span-1">
-          <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+          <Card className="rounded-xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold tracking-tight text-on-surface">Processing Queue</CardTitle>
               <p className="text-sm text-on-surface-variant">{queue.length} items awaiting processing</p>
@@ -251,7 +251,7 @@ function ProcessingContent() {
         {/* Wizard Panel */}
         <div className="lg:col-span-2">
           {!selectedItem ? (
-            <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+            <Card className="rounded-xl">
               <CardContent className="py-16 text-center">
                 <div className="w-12 h-12 rounded-xl bg-surface-container/60 flex items-center justify-center mx-auto mb-4">
                   <Scissors className="w-6 h-6 text-on-surface-variant/40" />
@@ -262,7 +262,7 @@ function ProcessingContent() {
               </CardContent>
             </Card>
           ) : (
-            <Card className="rounded-xl border border-outline-variant/15 shadow-sm">
+            <Card className="rounded-xl">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-sm text-on-surface-variant">
