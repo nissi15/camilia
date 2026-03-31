@@ -41,8 +41,8 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
     if (tg) {
       tg.ready();
       tg.expand();
-      try { tg.setHeaderColor("#1a1d23"); } catch { /* ignore */ }
-      try { tg.setBackgroundColor("#f8f9fa"); } catch { /* ignore */ }
+      try { tg.setHeaderColor("#FAF9F7"); } catch { /* ignore */ }
+      try { tg.setBackgroundColor("#FAF9F7"); } catch { /* ignore */ }
       setInitData(tg.initData);
     }
 

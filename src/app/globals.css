@@ -141,3 +141,80 @@
     line-height: 1.6;
   }
 }
+
+/* ── Telegram Mini App design tokens ── */
+@layer utilities {
+  .tg-card {
+    @apply bg-white rounded-2xl border border-black/[0.04];
+    box-shadow: var(--shadow-card);
+  }
+  .tg-card-sm {
+    @apply bg-white rounded-xl border border-black/[0.04];
+    box-shadow: var(--shadow-card);
+  }
+  .tg-input {
+    @apply w-full h-12 px-4 rounded-xl border border-outline-variant/40 bg-white text-[15px] text-on-surface
+           focus:ring-2 focus:ring-tertiary/30 focus:border-tertiary transition-all duration-200;
+  }
+  .tg-btn-primary {
+    @apply w-full h-14 bg-tertiary text-on-tertiary font-semibold rounded-xl text-[16px]
+           disabled:opacity-50 active:brightness-90 transition-all duration-200;
+  }
+  .tg-page-header {
+    @apply flex items-center gap-3 mb-5;
+  }
+  .tg-page-icon {
+    @apply w-11 h-11 bg-tertiary rounded-xl flex items-center justify-center shadow-sm;
+  }
+  .tg-page-title {
+    @apply text-lg text-on-surface tracking-tight;
+    font-family: var(--font-display);
+  }
+  .tg-page-subtitle {
+    @apply text-xs text-on-surface-variant;
+  }
+  .tg-label {
+    @apply text-sm font-medium text-on-surface-variant mb-1 block;
+  }
+}
+
+/* ── TG entrance animations ── */
+@keyframes tg-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes tg-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes tg-slide-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tg-animate-in {
+  animation: tg-fade-up 0.4s var(--ease-premium) both;
+}
+.tg-animate-scale {
+  animation: tg-scale-in 0.35s var(--ease-premium) both;
+}
+.tg-stagger > * {
+  animation: tg-fade-up 0.4s var(--ease-premium) both;
+}
+.tg-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.tg-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.tg-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.tg-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.tg-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.tg-stagger > *:nth-child(6) { animation-delay: 250ms; }
+.tg-stagger > *:nth-child(7) { animation-delay: 300ms; }
+.tg-stagger > *:nth-child(8) { animation-delay: 350ms; }
+.tg-stagger > *:nth-child(n+9) { animation-delay: 400ms; }
+
+/* ── TG background texture ── */
+.tg-bg {
+  background-color: var(--color-surface);
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(42,125,110,0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(232,83,46,0.02) 0%, transparent 50%);
+}

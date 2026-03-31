@@ -48,7 +48,6 @@ export default function ReceivePage() {
 
     setSubmitting(true);
 
-    // Create supplier if new
     let supplierId = form.supplierId;
     if (!supplierId && form.newSupplier) {
       const res = await apiFetch("/api/suppliers", {
@@ -93,7 +92,7 @@ export default function ReceivePage() {
 
   if (user?.role !== "WAREHOUSE_ADMIN") {
     return (
-      <div className="p-6 text-center text-gray-500">
+      <div className="p-6 text-center text-on-surface-variant">
         <p className="text-lg font-medium">Warehouse staff only</p>
       </div>
     );
@@ -101,27 +100,27 @@ export default function ReceivePage() {
 
   return (
     <div className="p-4">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
-          <PackageOpen className="w-5 h-5 text-white" />
+      <div className="tg-page-header tg-animate-in">
+        <div className="tg-page-icon">
+          <PackageOpen className="w-5 h-5 text-on-tertiary" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Receive Stock</h1>
-          <p className="text-xs text-gray-500">Log incoming delivery</p>
+          <h1 className="tg-page-title">Receive Stock</h1>
+          <p className="tg-page-subtitle">Log incoming delivery</p>
         </div>
       </div>
 
       {success && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-4 flex items-center gap-2">
-          <Check className="w-5 h-5 text-emerald-600" />
-          <p className="text-sm font-medium text-emerald-700">Stock received successfully!</p>
+        <div className="tg-card-sm bg-tertiary/5 p-3 mb-4 flex items-center gap-2 tg-animate-scale">
+          <Check className="w-5 h-5 text-tertiary" />
+          <p className="text-sm font-medium text-tertiary">Stock received successfully!</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Photo - mandatory */}
+      <form onSubmit={handleSubmit} className="space-y-3 tg-stagger">
+        {/* Photo */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Delivery Photo *</label>
+          <label className="tg-label">Delivery Photo *</label>
           <CameraButton
             context="receive"
             onPhotoUploaded={(url) => setForm({ ...form, photoUrl: url })}
@@ -130,25 +129,25 @@ export default function ReceivePage() {
 
         {/* Item name */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Item Name *</label>
+          <label className="tg-label">Item Name *</label>
           <input
             type="text"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="e.g. Beef Primal Cut"
-            className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white text-[15px] focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="tg-input"
             required
           />
         </div>
 
         {/* Category */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Category *</label>
+          <label className="tg-label">Category *</label>
           <div className="relative">
             <select
               value={form.categoryId}
               onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white text-[15px] appearance-none focus:ring-2 focus:ring-emerald-500"
+              className="tg-input appearance-none pr-10"
               required
             >
               <option value="">Select category</option>
@@ -156,25 +155,25 @@ export default function ReceivePage() {
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
-            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-4 top-4 pointer-events-none" />
+            <ChevronDown className="w-4 h-4 text-outline-variant absolute right-4 top-4 pointer-events-none" />
           </div>
         </div>
 
         {/* Supplier */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Supplier</label>
+          <label className="tg-label">Supplier</label>
           <div className="relative">
             <select
               value={form.supplierId}
               onChange={(e) => setForm({ ...form, supplierId: e.target.value, newSupplier: "" })}
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white text-[15px] appearance-none focus:ring-2 focus:ring-emerald-500"
+              className="tg-input appearance-none pr-10"
             >
               <option value="">New supplier...</option>
               {suppliers.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
-            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-4 top-4 pointer-events-none" />
+            <ChevronDown className="w-4 h-4 text-outline-variant absolute right-4 top-4 pointer-events-none" />
           </div>
           {!form.supplierId && (
             <input
@@ -182,7 +181,7 @@ export default function ReceivePage() {
               value={form.newSupplier}
               onChange={(e) => setForm({ ...form, newSupplier: e.target.value })}
               placeholder="Supplier name"
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white text-[15px] mt-2 focus:ring-2 focus:ring-emerald-500"
+              className="tg-input mt-2"
             />
           )}
         </div>
@@ -190,65 +189,65 @@ export default function ReceivePage() {
         {/* Weight and Count row */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Weight (g)</label>
+            <label className="tg-label">Weight (g)</label>
             <input
               type="number"
               value={form.weightGrams}
               onChange={(e) => setForm({ ...form, weightGrams: e.target.value })}
               placeholder="e.g. 22680"
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white text-[15px] focus:ring-2 focus:ring-emerald-500"
+              className="tg-input"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Unit Count</label>
+            <label className="tg-label">Unit Count</label>
             <input
               type="number"
               value={form.unitCount}
               onChange={(e) => setForm({ ...form, unitCount: e.target.value })}
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white text-[15px] focus:ring-2 focus:ring-emerald-500"
+              className="tg-input"
             />
           </div>
         </div>
 
-        {/* Cost in RWF */}
+        {/* Cost */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Cost (RWF)</label>
+          <label className="tg-label">Cost (RWF)</label>
           <input
             type="number"
             value={form.costRwf}
             onChange={(e) => setForm({ ...form, costRwf: e.target.value })}
             placeholder="e.g. 50000"
-            className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white text-[15px] focus:ring-2 focus:ring-emerald-500"
+            className="tg-input"
           />
         </div>
 
         {/* Expiry */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Expires At</label>
+          <label className="tg-label">Expires At</label>
           <input
             type="date"
             value={form.expiresAt}
             onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
-            className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white text-[15px] focus:ring-2 focus:ring-emerald-500"
+            className="tg-input"
           />
         </div>
 
         {/* Notes */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Notes</label>
+          <label className="tg-label">Notes</label>
           <textarea
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
             placeholder="Optional notes..."
             rows={2}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-[15px] resize-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-outline-variant/40 bg-white text-[15px] text-on-surface resize-none focus:ring-2 focus:ring-tertiary/30 focus:border-tertiary transition-all duration-200"
           />
         </div>
 
         <button
           type="submit"
           disabled={submitting || !form.name || !form.categoryId}
-          className="w-full h-14 bg-emerald-500 text-white font-semibold rounded-xl text-[16px] disabled:opacity-50 active:bg-emerald-600 transition-colors"
+          className="tg-btn-primary"
         >
           {submitting ? "Saving..." : "Receive Stock"}
         </button>
