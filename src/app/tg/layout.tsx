@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 export default function TelegramLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
+      <Script src="https://telegram.org/js/telegram-web-app.js" strategy="afterInteractive" />
       <TelegramProvider>
         <AccessGate>
           <TgErrorBoundary fallbackMessage="Could not load this page. Tap retry to refresh.">

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, DM_Serif_Display, Geist_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
-import { SessionProvider } from "next-auth/react";
+import { SessionWrapper } from "@/components/auth/session-wrapper";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -41,13 +41,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${dmSans.variable} ${dmSerifDisplay.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
+        <SessionWrapper>
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
-        </SessionProvider>
+        </SessionWrapper>
       </body>
     </html>
   );
