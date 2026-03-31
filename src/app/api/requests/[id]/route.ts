@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-guard";
+import { NextRequest, NextResponse } from "next/server";
+import { requireDualAuth } from "@/lib/telegram/auth-guard";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error, session } = await requireAuth();
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { error, user } = await requireDualAuth(req);
   if (error) return error;
 
   const { id } = await params;
@@ -28,8 +28,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   // Restaurant staff can only see their own requests
   if (
-    session!.user.role === "RESTAURANT_STAFF" &&
-    request.restaurantId !== session!.user.locationId
+    user!.role === "RESTAURANT_STAFF" &&
+    request.restaurantId !== user!.locationId
   ) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

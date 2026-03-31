@@ -23,7 +23,12 @@ import {
   Check,
   Loader2,
   Users,
+  Building2,
+  Plus,
+  Unlink,
+  UserPlus,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 function formatRole(role: string): string {
   return role
@@ -207,7 +212,8 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Telegram Staff Management (Warehouse Admin only) */}
+        {/* Warehouse Management (Admin only) */}
+        {role === "WAREHOUSE_ADMIN" && <RestaurantManagement />}
         {role === "WAREHOUSE_ADMIN" && <TelegramManagement />}
 
         {/* Application */}
@@ -265,6 +271,286 @@ function InfoRow({
   );
 }
 
+/* ─── Restaurant & Staff Management ─── */
+
+interface Restaurant {
+  id: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  users: { id: string; name: string; email: string }[];
+}
+
+function RestaurantManagement() {
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Add restaurant form
+  const [showAddRestaurant, setShowAddRestaurant] = useState(false);
+  const [newRestName, setNewRestName] = useState("");
+  const [newRestAddress, setNewRestAddress] = useState("");
+  const [newRestPhone, setNewRestPhone] = useState("");
+  const [addingRestaurant, setAddingRestaurant] = useState(false);
+
+  // Add staff form
+  const [addingStaffFor, setAddingStaffFor] = useState<string | null>(null);
+  const [staffName, setStaffName] = useState("");
+  const [staffEmail, setStaffEmail] = useState("");
+  const [staffPassword, setStaffPassword] = useState("");
+  const [addingStaff, setAddingStaff] = useState(false);
+  const [staffError, setStaffError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/restaurants")
+      .then((r) => r.ok ? r.json() : [])
+      .then(setRestaurants)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const addRestaurant = async () => {
+    if (!newRestName.trim()) return;
+    setAddingRestaurant(true);
+    const res = await fetch("/api/admin/restaurants", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: newRestName.trim(),
+        address: newRestAddress.trim() || undefined,
+        phone: newRestPhone.trim() || undefined,
+      }),
+    });
+    if (res.ok) {
+      const rest = await res.json();
+      setRestaurants((prev) => [...prev, { ...rest, users: [], _count: { requestsFrom: 0 } }]);
+      setNewRestName("");
+      setNewRestAddress("");
+      setNewRestPhone("");
+      setShowAddRestaurant(false);
+    }
+    setAddingRestaurant(false);
+  };
+
+  const addStaff = async (restaurantId: string) => {
+    if (!staffName.trim() || !staffEmail.trim() || !staffPassword.trim()) return;
+    setStaffError("");
+    setAddingStaff(true);
+    const res = await fetch("/api/admin/staff", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: staffName.trim(),
+        email: staffEmail.trim(),
+        password: staffPassword.trim(),
+        restaurantId,
+      }),
+    });
+    if (res.ok) {
+      const user = await res.json();
+      setRestaurants((prev) =>
+        prev.map((r) =>
+          r.id === restaurantId
+            ? { ...r, users: [...r.users, { id: user.id, name: user.name, email: user.email }] }
+            : r
+        )
+      );
+      setStaffName("");
+      setStaffEmail("");
+      setStaffPassword("");
+      setAddingStaffFor(null);
+    } else {
+      const data = await res.json();
+      setStaffError(data.error || "Failed to create staff");
+    }
+    setAddingStaff(false);
+  };
+
+  return (
+    <Card className="rounded-xl border border-outline-variant/15">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base font-semibold text-on-surface flex items-center gap-2">
+            <Building2 className="w-4 h-4" />
+            Restaurants & Staff
+          </CardTitle>
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-lg text-xs h-8 gap-1.5"
+            onClick={() => setShowAddRestaurant(!showAddRestaurant)}
+          >
+            <Plus className="w-3 h-3" />
+            Add Restaurant
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-xs text-on-surface-variant mb-4">
+          Add restaurants and create staff accounts. Staff can sign in on the web or link their Telegram in the section below.
+        </p>
+
+        {/* Add restaurant form */}
+        {showAddRestaurant && (
+          <div className="p-4 rounded-xl bg-surface-container/50 mb-4 space-y-3">
+            <p className="text-xs font-semibold text-on-surface">New Restaurant</p>
+            <Input
+              value={newRestName}
+              onChange={(e) => setNewRestName(e.target.value)}
+              placeholder="Restaurant name"
+              className="rounded-lg h-9 text-sm"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                value={newRestAddress}
+                onChange={(e) => setNewRestAddress(e.target.value)}
+                placeholder="Address (optional)"
+                className="rounded-lg h-9 text-sm"
+              />
+              <Input
+                value={newRestPhone}
+                onChange={(e) => setNewRestPhone(e.target.value)}
+                placeholder="Phone (optional)"
+                className="rounded-lg h-9 text-sm"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-lg text-xs h-8"
+                onClick={() => setShowAddRestaurant(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-lg text-xs h-8 bg-tertiary hover:bg-tertiary/90 text-white"
+                onClick={addRestaurant}
+                disabled={addingRestaurant || !newRestName.trim()}
+              >
+                {addingRestaurant ? <Loader2 className="w-3 h-3 animate-spin" /> : "Create"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex justify-center py-4">
+            <Loader2 className="w-5 h-5 animate-spin text-on-surface-variant" />
+          </div>
+        ) : restaurants.length === 0 ? (
+          <p className="text-sm text-on-surface-variant text-center py-4">
+            No restaurants yet. Add one to get started.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {restaurants.map((rest) => (
+              <div key={rest.id} className="rounded-xl border border-outline-variant/15 overflow-hidden">
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-on-surface">{rest.name}</p>
+                      <p className="text-xs text-on-surface-variant">
+                        {rest.users.length} staff member{rest.users.length !== 1 ? "s" : ""}
+                        {rest.address && ` · ${rest.address}`}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-lg text-xs h-8 gap-1"
+                    onClick={() => {
+                      setAddingStaffFor(addingStaffFor === rest.id ? null : rest.id);
+                      setStaffError("");
+                      setStaffName("");
+                      setStaffEmail("");
+                      setStaffPassword("");
+                    }}
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    Add Staff
+                  </Button>
+                </div>
+
+                {/* Staff list */}
+                {rest.users.length > 0 && (
+                  <div className="px-4 pb-3">
+                    {rest.users.map((u) => (
+                      <div key={u.id} className="flex items-center gap-2 py-1.5 text-xs">
+                        <div className="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center">
+                          <span className="text-[10px] font-semibold text-on-surface-variant">
+                            {u.name.charAt(0)}
+                          </span>
+                        </div>
+                        <span className="font-medium text-on-surface">{u.name}</span>
+                        <span className="text-on-surface-variant">{u.email}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add staff form */}
+                {addingStaffFor === rest.id && (
+                  <div className="px-4 pb-4 pt-2 border-t border-outline-variant/10 space-y-2.5">
+                    <p className="text-xs font-semibold text-on-surface">New staff for {rest.name}</p>
+                    {staffError && (
+                      <p className="text-xs text-error">{staffError}</p>
+                    )}
+                    <Input
+                      value={staffName}
+                      onChange={(e) => setStaffName(e.target.value)}
+                      placeholder="Staff name"
+                      className="rounded-lg h-9 text-sm"
+                    />
+                    <Input
+                      type="email"
+                      value={staffEmail}
+                      onChange={(e) => setStaffEmail(e.target.value)}
+                      placeholder="Email address"
+                      className="rounded-lg h-9 text-sm"
+                    />
+                    <Input
+                      type="password"
+                      value={staffPassword}
+                      onChange={(e) => setStaffPassword(e.target.value)}
+                      placeholder="Password (min 6 chars)"
+                      className="rounded-lg h-9 text-sm"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-lg text-xs h-8"
+                        onClick={() => setAddingStaffFor(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="rounded-lg text-xs h-8 bg-tertiary hover:bg-tertiary/90 text-white"
+                        onClick={() => addStaff(rest.id)}
+                        disabled={addingStaff || !staffName.trim() || !staffEmail.trim() || staffPassword.length < 6}
+                      >
+                        {addingStaff ? <Loader2 className="w-3 h-3 animate-spin" /> : "Create Staff Account"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ─── Telegram Management ─── */
+
 interface StaffUser {
   id: string;
   name: string;
@@ -278,6 +564,7 @@ function TelegramManagement() {
   const [staff, setStaff] = useState<StaffUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
+  const [unlinking, setUnlinking] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
@@ -304,6 +591,21 @@ function TelegramManagement() {
     setGenerating(null);
   };
 
+  const unlinkUser = async (userId: string) => {
+    setUnlinking(userId);
+    const res = await fetch("/api/telegram/unlink", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    });
+    if (res.ok) {
+      setStaff((prev) =>
+        prev.map((s) => (s.id === userId ? { ...s, telegramLink: null, linkCode: null } : s))
+      );
+    }
+    setUnlinking(null);
+  };
+
   const copyCode = (code: string, userId: string) => {
     navigator.clipboard.writeText(code);
     setCopied(userId);
@@ -315,13 +617,14 @@ function TelegramManagement() {
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-semibold text-on-surface flex items-center gap-2">
           <Smartphone className="w-4 h-4" />
-          Telegram Staff Access
+          Telegram Access
         </CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-xs text-on-surface-variant mb-4">
-          Generate link codes for staff to connect their Telegram accounts to StockTrace.
-          Staff enters <code className="bg-surface-container px-1.5 py-0.5 rounded text-xs">/link CODE</code> in the Telegram bot.
+          Generate codes for anyone (including yourself) to connect Telegram.
+          Enter <code className="bg-surface-container px-1.5 py-0.5 rounded text-xs">/link CODE</code> in the bot.
+          Telegram works across all devices once linked.
         </p>
 
         {loading ? (
@@ -329,7 +632,7 @@ function TelegramManagement() {
             <Loader2 className="w-5 h-5 animate-spin text-on-surface-variant" />
           </div>
         ) : staff.length === 0 ? (
-          <p className="text-sm text-on-surface-variant text-center py-4">No staff users found</p>
+          <p className="text-sm text-on-surface-variant text-center py-4">No users found</p>
         ) : (
           <div className="space-y-1">
             {staff.map((s, i) => (
@@ -340,15 +643,36 @@ function TelegramManagement() {
                       <Users className="w-4 h-4 text-on-surface-variant" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-on-surface">{s.name}</p>
+                      <p className="text-sm font-medium text-on-surface">
+                        {s.name}
+                        {s.role === "WAREHOUSE_ADMIN" && (
+                          <span className="ml-1.5 text-[10px] text-tertiary font-semibold">ADMIN</span>
+                        )}
+                      </p>
                       <p className="text-xs text-on-surface-variant">{s.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {s.telegramLink ? (
-                      <span className="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-medium">
-                        Linked{s.telegramLink.telegramName ? ` (${s.telegramLink.telegramName})` : ""}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-medium">
+                          Linked{s.telegramLink.telegramName ? ` (${s.telegramLink.telegramName})` : ""}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="rounded-lg h-7 w-7 p-0 text-on-surface-variant hover:text-error"
+                          onClick={() => unlinkUser(s.id)}
+                          disabled={unlinking === s.id}
+                          title="Unlink Telegram"
+                        >
+                          {unlinking === s.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Unlink className="w-3.5 h-3.5" />
+                          )}
+                        </Button>
+                      </div>
                     ) : s.linkCode ? (
                       <button
                         onClick={() => copyCode(s.linkCode!, s.id)}
