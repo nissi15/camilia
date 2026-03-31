@@ -26,7 +26,6 @@ export default function ReportPage() {
 
   async function loadReport() {
     try {
-      // Fetch today's data
       const [dashRes, wasteRes] = await Promise.all([
         apiFetch("/api/dashboard"),
         apiFetch("/api/reports/waste?days=1"),
@@ -38,7 +37,6 @@ export default function ReportPage() {
       if (dashRes.ok) dashData = await dashRes.json();
       if (wasteRes.ok) wasteData = await wasteRes.json();
 
-      // Build summary from dashboard data
       const recentItems = Array.isArray(dashData?.recentItems) ? dashData.recentItems : [];
       const received = recentItems.filter((i: { status: string }) => i.status === "RECEIVED");
       const processed = recentItems.filter((i: { status: string }) => i.status === "PROCESSED");
@@ -57,11 +55,10 @@ export default function ReportPage() {
         dispatched: { count: dashData?.pendingRequests || 0 },
         waste: { count: waste.length, weight: wasteWeight, costRwf: wasteCost },
         yieldPercent: Math.round(yieldPct * 10) / 10,
-        prevYieldPercent: 0, // Would need historical data
+        prevYieldPercent: 0,
         pendingRequests: dashData?.pendingRequests || 0,
       });
 
-      // Top wasted items
       const wasteByCategory = Array.isArray(wasteData?.wasteByCategory) ? wasteData.wasteByCategory : [];
       if (wasteByCategory.length > 0) {
         const topItems = wasteByCategory
@@ -74,7 +71,7 @@ export default function ReportPage() {
         setTopWaste(topItems);
       }
     } catch {
-      // Dashboard may not return exact format, that's ok
+      // Dashboard may not return exact format
     } finally {
       setLoading(false);
     }
@@ -83,7 +80,7 @@ export default function ReportPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-24">
-        <div className="animate-spin w-6 h-6 border-2 border-rose-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-6 h-6 border-2 border-tertiary border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -98,98 +95,100 @@ export default function ReportPage() {
 
   return (
     <div className="p-4">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-rose-500 rounded-xl flex items-center justify-center">
-          <BarChart3 className="w-5 h-5 text-white" />
+      <div className="tg-page-header tg-animate-in">
+        <div className="tg-page-icon">
+          <BarChart3 className="w-5 h-5 text-on-tertiary" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Quick Report</h1>
-          <p className="text-xs text-gray-500">Today&apos;s summary</p>
+          <h1 className="tg-page-title">Quick Report</h1>
+          <p className="tg-page-subtitle">Today&apos;s summary</p>
         </div>
       </div>
 
       {/* Main yield card */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm text-center mb-4">
-        <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-2">Overall Yield</p>
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-5xl font-bold text-gray-900">{summary?.yieldPercent || 0}%</span>
-          {yieldTrend === "up" && <TrendingUp className="w-6 h-6 text-emerald-500" />}
-          {yieldTrend === "down" && <TrendingDown className="w-6 h-6 text-red-500" />}
-          {yieldTrend === "flat" && <Minus className="w-6 h-6 text-gray-300" />}
+      <div className="tg-card p-6 text-center mb-4 tg-animate-in" style={{ animationDelay: "50ms" }}>
+        <p className="text-[11px] text-on-surface-variant font-semibold uppercase tracking-widest mb-3">Overall Yield</p>
+        <div className="flex items-center justify-center gap-3">
+          <span className="text-5xl text-on-surface tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+            {summary?.yieldPercent || 0}%
+          </span>
+          {yieldTrend === "up" && <TrendingUp className="w-6 h-6 text-tertiary" />}
+          {yieldTrend === "down" && <TrendingDown className="w-6 h-6 text-error" />}
+          {yieldTrend === "flat" && <Minus className="w-6 h-6 text-outline-variant" />}
         </div>
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm">
+      <div className="grid grid-cols-2 gap-3 mb-4 tg-stagger">
+        <div className="tg-card-sm p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Scale className="w-4 h-4 text-emerald-500" />
-            <span className="text-xs text-gray-400 font-medium">Received</span>
+            <Scale className="w-4 h-4 text-tertiary" />
+            <span className="text-[11px] text-on-surface-variant font-medium">Received</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{summary?.received.count || 0}</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-2xl font-bold text-on-surface">{summary?.received.count || 0}</p>
+          <p className="text-xs text-on-surface-variant">
             {((summary?.received.weight || 0) / 1000).toFixed(1)}kg
           </p>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm">
+        <div className="tg-card-sm p-4">
           <div className="flex items-center gap-2 mb-2">
-            <BarChart3 className="w-4 h-4 text-blue-500" />
-            <span className="text-xs text-gray-400 font-medium">Processed</span>
+            <BarChart3 className="w-4 h-4 text-tertiary" />
+            <span className="text-[11px] text-on-surface-variant font-medium">Processed</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{summary?.processed.count || 0}</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-2xl font-bold text-on-surface">{summary?.processed.count || 0}</p>
+          <p className="text-xs text-on-surface-variant">
             {((summary?.processed.weight || 0) / 1000).toFixed(1)}kg
           </p>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm">
+        <div className="tg-card-sm p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Trash2 className="w-4 h-4 text-red-500" />
-            <span className="text-xs text-gray-400 font-medium">Waste</span>
+            <Trash2 className="w-4 h-4 text-error" />
+            <span className="text-[11px] text-on-surface-variant font-medium">Waste</span>
           </div>
-          <p className="text-2xl font-bold text-red-600">{summary?.waste.count || 0}</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-2xl font-bold text-error">{summary?.waste.count || 0}</p>
+          <p className="text-xs text-on-surface-variant">
             {((summary?.waste.weight || 0) / 1000).toFixed(1)}kg
           </p>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm">
+        <div className="tg-card-sm p-4">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-4 h-4 text-amber-500" />
-            <span className="text-xs text-gray-400 font-medium">Waste Cost</span>
+            <DollarSign className="w-4 h-4 text-primary" />
+            <span className="text-[11px] text-on-surface-variant font-medium">Waste Cost</span>
           </div>
-          <p className="text-2xl font-bold text-amber-600">
+          <p className="text-2xl font-bold text-primary">
             {(summary?.waste.costRwf || 0).toLocaleString()}
           </p>
-          <p className="text-xs text-gray-500">RWF</p>
+          <p className="text-xs text-on-surface-variant">RWF</p>
         </div>
       </div>
 
       {/* Pending requests */}
       {(summary?.pendingRequests || 0) > 0 && (
-        <div className="bg-amber-50 rounded-xl p-4 mb-4 flex items-center justify-between">
+        <div className="tg-card-sm p-4 mb-4 flex items-center justify-between bg-primary/5 tg-animate-in" style={{ animationDelay: "200ms" }}>
           <div>
-            <p className="text-sm font-medium text-amber-800">Pending Requests</p>
-            <p className="text-xs text-amber-600">Awaiting approval</p>
+            <p className="text-sm font-semibold text-on-surface">Pending Requests</p>
+            <p className="text-xs text-on-surface-variant">Awaiting approval</p>
           </div>
-          <span className="text-2xl font-bold text-amber-700">{summary?.pendingRequests}</span>
+          <span className="text-2xl font-bold text-primary">{summary?.pendingRequests}</span>
         </div>
       )}
 
       {/* Top wasted items */}
       {topWaste.length > 0 && (
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <p className="text-sm font-medium text-gray-700 mb-3">Top Wasted Items</p>
+        <div className="tg-card-sm p-4 tg-animate-in" style={{ animationDelay: "250ms" }}>
+          <p className="text-sm font-semibold text-on-surface mb-3">Top Wasted Items</p>
           {topWaste.map((item, idx) => (
-            <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 bg-red-100 rounded text-[10px] font-bold text-red-600 flex items-center justify-center">
+            <div key={idx} className="flex items-center justify-between py-2.5 border-b border-surface-container last:border-0">
+              <div className="flex items-center gap-2.5">
+                <span className="w-6 h-6 bg-error/10 rounded-lg text-[10px] font-bold text-error flex items-center justify-center">
                   {idx + 1}
                 </span>
-                <span className="text-sm text-gray-800">{item.name}</span>
+                <span className="text-sm text-on-surface">{item.name}</span>
               </div>
-              <span className="text-sm font-semibold text-gray-600">{(item.weight / 1000).toFixed(1)}kg</span>
+              <span className="text-sm font-semibold text-on-surface-variant">{(item.weight / 1000).toFixed(1)}kg</span>
             </div>
           ))}
         </div>

@@ -85,9 +85,9 @@ export function CameraButton({ context, entityId, onPhotoUploaded, className }: 
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="w-full h-24 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-1 text-gray-400 active:bg-gray-50"
+          className="w-full h-24 border-2 border-dashed border-outline-variant/40 rounded-xl flex flex-col items-center justify-center gap-1.5 text-on-surface-variant/60 active:bg-surface-low active:border-tertiary/40 transition-all duration-200"
         >
-          <Camera className="w-6 h-6" />
+          <Camera className="w-5 h-5" />
           <span className="text-xs font-medium">Take Photo</span>
         </button>
       )}

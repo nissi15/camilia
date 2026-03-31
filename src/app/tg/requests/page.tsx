@@ -18,11 +18,11 @@ interface RequestData {
 }
 
 const statusConfig: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
-  PENDING: { icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-  PACKING: { icon: Package, color: "text-blue-600", bg: "bg-blue-50" },
-  DISPATCHED: { icon: Truck, color: "text-purple-600", bg: "bg-purple-50" },
-  DELIVERED: { icon: Check, color: "text-emerald-600", bg: "bg-emerald-50" },
-  CANCELLED: { icon: X, color: "text-red-600", bg: "bg-red-50" },
+  PENDING: { icon: Clock, color: "text-primary", bg: "bg-primary/10" },
+  PACKING: { icon: Package, color: "text-tertiary", bg: "bg-tertiary/10" },
+  DISPATCHED: { icon: Truck, color: "text-secondary", bg: "bg-secondary/10" },
+  DELIVERED: { icon: Check, color: "text-tertiary", bg: "bg-tertiary/10" },
+  CANCELLED: { icon: X, color: "text-error", bg: "bg-error/10" },
 };
 
 export default function RequestsPage() {
@@ -81,18 +81,18 @@ export default function RequestsPage() {
 
   return (
     <div className="p-4">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
-          <ClipboardList className="w-5 h-5 text-white" />
+      <div className="tg-page-header tg-animate-in">
+        <div className="tg-page-icon">
+          <ClipboardList className="w-5 h-5 text-on-tertiary" />
         </div>
         <div className="flex-1">
-          <h1 className="text-lg font-bold text-gray-900">Requests</h1>
-          <p className="text-xs text-gray-500">{isWarehouse ? "Manage orders" : "Your orders"}</p>
+          <h1 className="tg-page-title">Requests</h1>
+          <p className="tg-page-subtitle">{isWarehouse ? "Manage orders" : "Your orders"}</p>
         </div>
         {!isWarehouse && (
           <Link
             href="/tg/new-request"
-            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500 text-white rounded-xl text-xs font-semibold active:bg-emerald-600"
+            className="flex items-center gap-1.5 px-3 py-2 bg-tertiary text-on-tertiary rounded-xl text-xs font-semibold active:brightness-90 transition-all"
           >
             <PlusCircle className="w-3.5 h-3.5" />
             New
@@ -101,13 +101,15 @@ export default function RequestsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 tg-animate-in" style={{ animationDelay: "50ms" }}>
         {(["all", "pending", "active"] as const).map((t) => (
           <button
             key={t}
             onClick={() => { setTab(t); setLoading(true); }}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-              tab === t ? "bg-amber-500 text-white" : "bg-white text-gray-600 border border-gray-200"
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+              tab === t
+                ? "bg-tertiary text-on-tertiary shadow-sm"
+                : "bg-white text-on-surface-variant border border-black/[0.04] active:bg-surface-low"
             }`}
           >
             {t === "all" ? "All" : t === "pending" ? "Pending" : "Active"}
@@ -117,52 +119,52 @@ export default function RequestsPage() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full" />
+          <div className="animate-spin w-6 h-6 border-2 border-tertiary border-t-transparent rounded-full" />
         </div>
       ) : requests.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-12">No requests found</p>
+        <p className="text-sm text-on-surface-variant text-center py-12">No requests found</p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2 tg-stagger">
           {requests.map((req) => {
             const config = statusConfig[req.status] || statusConfig.PENDING;
             const StatusIcon = config.icon;
             const isExpanded = expandedId === req.id;
 
             return (
-              <div key={req.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div key={req.id} className="tg-card-sm overflow-hidden">
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : req.id)}
-                  className="w-full p-4 text-left flex items-center gap-3"
+                  className="w-full p-4 text-left flex items-center gap-3 active:bg-surface-low transition-colors"
                 >
                   <div className={`w-10 h-10 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
                     <StatusIcon className={`w-5 h-5 ${config.color}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold text-gray-900 text-sm">{req.requestNumber}</p>
-                      <span className={`text-xs font-medium ${config.color}`}>{req.status}</span>
+                      <p className="font-semibold text-on-surface text-sm">{req.requestNumber}</p>
+                      <span className={`text-xs font-semibold ${config.color}`}>{req.status}</span>
                     </div>
-                    <p className="text-xs text-gray-500 truncate">
-                      {req.restaurant?.name || "Unknown"} • {req._count?.items ?? 0} items
+                    <p className="text-xs text-on-surface-variant truncate">
+                      {req.restaurant?.name || "Unknown"} &middot; {req._count?.items ?? 0} items
                     </p>
                   </div>
-                  <ChevronRight className={`w-4 h-4 text-gray-300 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                  <ChevronRight className={`w-4 h-4 text-outline-variant transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`} />
                 </button>
 
                 {isExpanded && (
-                  <div className="px-4 pb-4 border-t border-gray-50 pt-3 space-y-3">
+                  <div className="px-4 pb-4 border-t border-surface-container pt-3 space-y-3 tg-animate-in">
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div>
-                        <span className="text-gray-400">Requested by</span>
-                        <p className="font-medium text-gray-700">{req.requester?.name || "Unknown"}</p>
+                        <span className="text-on-surface-variant">Requested by</span>
+                        <p className="font-medium text-on-surface">{req.requester?.name || "Unknown"}</p>
                       </div>
                       <div>
-                        <span className="text-gray-400">Priority</span>
-                        <p className="font-medium text-gray-700">{req.priority}</p>
+                        <span className="text-on-surface-variant">Priority</span>
+                        <p className="font-medium text-on-surface">{req.priority}</p>
                       </div>
                       <div>
-                        <span className="text-gray-400">Date</span>
-                        <p className="font-medium text-gray-700">
+                        <span className="text-on-surface-variant">Date</span>
+                        <p className="font-medium text-on-surface">
                           {new Date(req.requestedAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -171,7 +173,7 @@ export default function RequestsPage() {
                     {/* View detail link */}
                     <Link
                       href={`/tg/requests/${req.id}`}
-                      className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 text-sm font-medium text-gray-600 active:bg-gray-100"
+                      className="flex items-center justify-between p-2.5 rounded-lg bg-surface-low text-sm font-medium text-on-surface-variant active:bg-surface-container transition-colors"
                     >
                       View full details
                       <ChevronRight className="w-4 h-4" />
@@ -183,14 +185,14 @@ export default function RequestsPage() {
                         <button
                           onClick={() => updateStatus(req.id, "PACKING")}
                           disabled={actionLoading === req.id}
-                          className="flex-1 h-11 bg-emerald-500 text-white rounded-xl text-sm font-medium disabled:opacity-50"
+                          className="flex-1 h-11 bg-tertiary text-on-tertiary rounded-xl text-sm font-medium disabled:opacity-50 active:brightness-90 transition-all"
                         >
                           Approve
                         </button>
                         <button
                           onClick={() => updateStatus(req.id, "CANCELLED")}
                           disabled={actionLoading === req.id}
-                          className="flex-1 h-11 bg-red-500 text-white rounded-xl text-sm font-medium disabled:opacity-50"
+                          className="flex-1 h-11 bg-error text-on-error rounded-xl text-sm font-medium disabled:opacity-50 active:brightness-90 transition-all"
                         >
                           Reject
                         </button>
@@ -209,7 +211,7 @@ export default function RequestsPage() {
                         <button
                           onClick={() => updateStatus(req.id, "DISPATCHED")}
                           disabled={actionLoading === req.id}
-                          className="w-full h-11 bg-purple-500 text-white rounded-xl text-sm font-medium disabled:opacity-50"
+                          className="w-full h-11 bg-tertiary text-on-tertiary rounded-xl text-sm font-medium disabled:opacity-50 active:brightness-90 transition-all"
                         >
                           Mark Dispatched
                         </button>
@@ -229,7 +231,7 @@ export default function RequestsPage() {
                         <button
                           onClick={() => confirmDelivery(req.id)}
                           disabled={actionLoading === req.id}
-                          className="w-full h-11 bg-emerald-500 text-white rounded-xl text-sm font-medium disabled:opacity-50"
+                          className="w-full h-11 bg-tertiary text-on-tertiary rounded-xl text-sm font-medium disabled:opacity-50 active:brightness-90 transition-all"
                         >
                           Confirm Delivery
                         </button>

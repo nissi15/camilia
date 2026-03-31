@@ -109,7 +109,6 @@ export default function ProcessPage() {
       const data = await res.json();
       setResult(data.yield);
       setSuccess(true);
-      // Refresh items list
       apiFetch("/api/inventory?status=RECEIVED,PROCESSED&limit=100")
         .then((r) => r.ok ? r.json() : { items: [] })
         .then((d) => setItems(d.items || []))
@@ -129,7 +128,7 @@ export default function ProcessPage() {
 
   if (user?.role !== "WAREHOUSE_ADMIN") {
     return (
-      <div className="p-6 text-center text-gray-500">
+      <div className="p-6 text-center text-on-surface-variant">
         <p className="text-lg font-medium">Warehouse staff only</p>
       </div>
     );
@@ -137,35 +136,37 @@ export default function ProcessPage() {
 
   if (success && result) {
     return (
-      <div className="p-4 space-y-4">
-        <div className="bg-white rounded-2xl p-6 text-center">
+      <div className="p-4 space-y-4 tg-animate-in">
+        <div className="tg-card p-6 text-center">
           <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${
-            result.belowTarget ? "bg-amber-100" : "bg-emerald-100"
+            result.belowTarget ? "bg-primary/10" : "bg-tertiary/10"
           }`}>
             {result.belowTarget ? (
-              <AlertTriangle className="w-8 h-8 text-amber-600" />
+              <AlertTriangle className="w-8 h-8 text-primary" />
             ) : (
-              <Check className="w-8 h-8 text-emerald-600" />
+              <Check className="w-8 h-8 text-tertiary" />
             )}
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Processing Complete</h2>
-          <div className="text-4xl font-bold mb-1" style={{ color: result.belowTarget ? "#d97706" : "#059669" }}>
+          <h2 className="text-xl text-on-surface mb-2" style={{ fontFamily: "var(--font-display)" }}>
+            Processing Complete
+          </h2>
+          <div className="text-4xl tracking-tight mb-1" style={{
+            fontFamily: "var(--font-display)",
+            color: result.belowTarget ? "var(--primary)" : "var(--color-tertiary)"
+          }}>
             {result.actual}%
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-on-surface-variant">
             Yield achieved
             {result.target && ` (target: ${result.target}%)`}
           </p>
           {result.belowTarget && (
-            <p className="text-sm text-amber-600 mt-2 font-medium">
+            <p className="text-sm text-primary mt-2 font-semibold">
               Below target by {(result.target! - result.actual).toFixed(1)}%
             </p>
           )}
         </div>
-        <button
-          onClick={reset}
-          className="w-full h-14 bg-emerald-500 text-white font-semibold rounded-xl text-[16px] active:bg-emerald-600"
-        >
+        <button onClick={reset} className="tg-btn-primary">
           Process Another Item
         </button>
       </div>
@@ -174,22 +175,22 @@ export default function ProcessPage() {
 
   return (
     <div className="p-4">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-          <Scissors className="w-5 h-5 text-white" />
+      <div className="tg-page-header tg-animate-in">
+        <div className="tg-page-icon">
+          <Scissors className="w-5 h-5 text-on-tertiary" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Process Item</h1>
-          <p className="text-xs text-gray-500">Butcher, portion, or package</p>
+          <h1 className="tg-page-title">Process Item</h1>
+          <p className="tg-page-subtitle">Butcher, portion, or package</p>
         </div>
       </div>
 
       {/* Select source item */}
       {!selectedItem ? (
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-700">Select item to process:</p>
+        <div className="space-y-2 tg-stagger">
+          <p className="tg-label">Select item to process:</p>
           {items.length === 0 ? (
-            <p className="text-sm text-gray-400 py-8 text-center">No items available for processing</p>
+            <p className="text-sm text-on-surface-variant py-8 text-center">No items available for processing</p>
           ) : (
             items.map((item) => (
               <button
@@ -198,26 +199,26 @@ export default function ProcessPage() {
                   setSelectedItem(item);
                   setOutputs([{ name: "", weightGrams: "", unitCount: "1", unitLabel: "piece", categoryId: item.category.id }]);
                 }}
-                className="w-full bg-white rounded-xl p-4 text-left shadow-sm active:bg-gray-50"
+                className="w-full tg-card-sm p-4 text-left active:bg-surface-low transition-colors"
               >
-                <p className="font-semibold text-gray-900">{item.name}</p>
-                <p className="text-xs text-gray-500">
-                  {item.category.name} • {item.weightGrams ? `${Number(item.weightGrams).toLocaleString()}g` : `${item.unitCount} units`}
-                  {" "} • {item.batchCode}
+                <p className="font-semibold text-on-surface">{item.name}</p>
+                <p className="text-xs text-on-surface-variant">
+                  {item.category.name} &middot; {item.weightGrams ? `${Number(item.weightGrams).toLocaleString()}g` : `${item.unitCount} units`}
+                  {" "}&middot; {item.batchCode}
                 </p>
               </button>
             ))
           )}
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-3 tg-stagger">
           {/* Source info */}
-          <div className="bg-blue-50 rounded-xl p-3">
-            <p className="text-sm font-medium text-blue-900">{selectedItem.name}</p>
-            <p className="text-xs text-blue-600">
+          <div className="tg-card-sm !bg-tertiary/5 !border-tertiary/10 p-3">
+            <p className="text-sm font-semibold text-on-surface">{selectedItem.name}</p>
+            <p className="text-xs text-tertiary">
               {selectedItem.weightGrams ? `${Number(selectedItem.weightGrams).toLocaleString()}g` : `${selectedItem.unitCount} units`}
             </p>
-            <button type="button" onClick={reset} className="text-xs text-blue-500 underline mt-1">
+            <button type="button" onClick={reset} className="text-xs text-tertiary underline mt-1 font-medium">
               Change item
             </button>
           </div>
@@ -229,8 +230,10 @@ export default function ProcessPage() {
                 key={t}
                 type="button"
                 onClick={() => setStepType(t)}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  stepType === t ? "bg-blue-500 text-white" : "bg-white text-gray-600 border border-gray-200"
+                className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  stepType === t
+                    ? "bg-tertiary text-on-tertiary shadow-sm"
+                    : "bg-white text-on-surface-variant border border-black/[0.04] active:bg-surface-low"
                 }`}
               >
                 {t.charAt(0) + t.slice(1).toLowerCase()}
@@ -240,15 +243,15 @@ export default function ProcessPage() {
 
           {/* Yield target indicator */}
           {yieldTarget && (
-            <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
-              <span className="text-xs text-gray-500">Target yield</span>
-              <span className="text-sm font-bold text-gray-700">{yieldTarget}%</span>
+            <div className="tg-card-sm p-3 flex items-center justify-between">
+              <span className="text-xs text-on-surface-variant font-medium">Target yield</span>
+              <span className="text-sm font-bold text-on-surface">{yieldTarget}%</span>
             </div>
           )}
 
-          {/* Photo of processed output */}
+          {/* Photo */}
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Photo of output *</label>
+            <label className="tg-label">Photo of output *</label>
             <CameraButton
               context="process"
               entityId={selectedItem.id}
@@ -259,25 +262,25 @@ export default function ProcessPage() {
           {/* Outputs */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">Output portions</label>
-              <button type="button" onClick={addOutput} className="text-blue-500 text-sm font-medium flex items-center gap-1">
+              <label className="tg-label !mb-0">Output portions</label>
+              <button type="button" onClick={addOutput} className="text-tertiary text-sm font-semibold flex items-center gap-1">
                 <Plus className="w-4 h-4" /> Add
               </button>
             </div>
 
             {outputs.map((output, idx) => (
-              <div key={idx} className="bg-white rounded-xl p-3 border border-gray-100 space-y-2">
+              <div key={idx} className="tg-card-sm p-3 space-y-2">
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={output.name}
                     onChange={(e) => updateOutput(idx, "name", e.target.value)}
                     placeholder="e.g. Ribeye Steak"
-                    className="flex-1 h-11 px-3 rounded-lg border border-gray-200 text-[14px] focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 h-11 px-3 rounded-lg border border-outline-variant/40 text-[14px] text-on-surface focus:ring-2 focus:ring-tertiary/30 focus:border-tertiary transition-all"
                     required
                   />
                   {outputs.length > 1 && (
-                    <button type="button" onClick={() => removeOutput(idx)} className="p-2 text-red-400">
+                    <button type="button" onClick={() => removeOutput(idx)} className="p-2 text-error/60 active:text-error transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}
@@ -288,14 +291,14 @@ export default function ProcessPage() {
                     value={output.weightGrams}
                     onChange={(e) => updateOutput(idx, "weightGrams", e.target.value)}
                     placeholder="Weight (g)"
-                    className="h-11 px-3 rounded-lg border border-gray-200 text-[14px] focus:ring-2 focus:ring-blue-500"
+                    className="h-11 px-3 rounded-lg border border-outline-variant/40 text-[14px] text-on-surface focus:ring-2 focus:ring-tertiary/30 focus:border-tertiary transition-all"
                   />
                   <input
                     type="number"
                     value={output.unitCount}
                     onChange={(e) => updateOutput(idx, "unitCount", e.target.value)}
                     placeholder="Count"
-                    className="h-11 px-3 rounded-lg border border-gray-200 text-[14px] focus:ring-2 focus:ring-blue-500"
+                    className="h-11 px-3 rounded-lg border border-outline-variant/40 text-[14px] text-on-surface focus:ring-2 focus:ring-tertiary/30 focus:border-tertiary transition-all"
                   />
                 </div>
               </div>
@@ -304,24 +307,24 @@ export default function ProcessPage() {
 
           {/* Waste */}
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Waste weight (g)</label>
+            <label className="tg-label">Waste weight (g)</label>
             <input
               type="number"
               value={wasteWeight}
               onChange={(e) => setWasteWeight(e.target.value)}
               placeholder="0"
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-white text-[15px] focus:ring-2 focus:ring-blue-500"
+              className="tg-input"
             />
           </div>
 
-          {/* Live yield indicator */}
+          {/* Live yield */}
           {inputWeight > 0 && totalOutputWeight > 0 && (
-            <div className={`rounded-xl p-3 flex items-center justify-between ${
-              yieldTarget && currentYield < yieldTarget ? "bg-amber-50" : "bg-emerald-50"
+            <div className={`tg-card-sm p-3 flex items-center justify-between tg-animate-scale ${
+              yieldTarget && currentYield < yieldTarget ? "!bg-primary/5 !border-primary/10" : "!bg-tertiary/5 !border-tertiary/10"
             }`}>
-              <span className="text-xs font-medium text-gray-600">Current yield</span>
+              <span className="text-xs font-semibold text-on-surface-variant">Current yield</span>
               <span className={`text-lg font-bold ${
-                yieldTarget && currentYield < yieldTarget ? "text-amber-600" : "text-emerald-600"
+                yieldTarget && currentYield < yieldTarget ? "text-primary" : "text-tertiary"
               }`}>
                 {currentYield}%
               </span>
@@ -334,13 +337,13 @@ export default function ProcessPage() {
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Optional notes..."
             rows={2}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-[15px] resize-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 rounded-xl border border-outline-variant/40 bg-white text-[15px] text-on-surface resize-none focus:ring-2 focus:ring-tertiary/30 focus:border-tertiary transition-all duration-200"
           />
 
           <button
             type="submit"
             disabled={submitting || outputs.some((o) => !o.name)}
-            className="w-full h-14 bg-blue-500 text-white font-semibold rounded-xl text-[16px] disabled:opacity-50 active:bg-blue-600"
+            className="tg-btn-primary"
           >
             {submitting ? "Processing..." : "Complete Processing"}
           </button>

@@ -24,7 +24,7 @@ export default function TelegramLayout({ children }: { children: React.ReactNode
       <TelegramProvider>
         <AccessGate>
           <TgErrorBoundary fallbackMessage="Could not load this page. Tap retry to refresh.">
-            <div className="min-h-screen bg-gray-50 pb-20">
+            <div className="min-h-screen tg-bg pb-20">
               {children}
             </div>
           </TgErrorBoundary>
