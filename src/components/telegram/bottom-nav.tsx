@@ -3,15 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useTelegram } from "@/app/tg/providers";
 import {
   Home,
   PackageOpen,
   ClipboardList,
   Package,
   BarChart3,
+  PlusCircle,
+  MessageSquare,
 } from "lucide-react";
 
-const tabs = [
+interface Tab {
+  label: string;
+  href: string;
+  icon: React.ElementType;
+  exact?: boolean;
+}
+
+const warehouseTabs: Tab[] = [
   { label: "Home", href: "/tg", icon: Home, exact: true },
   { label: "Receive", href: "/tg/receive", icon: PackageOpen },
   { label: "Requests", href: "/tg/requests", icon: ClipboardList },
@@ -19,8 +29,19 @@ const tabs = [
   { label: "Report", href: "/tg/report", icon: BarChart3 },
 ];
 
+const restaurantTabs: Tab[] = [
+  { label: "Home", href: "/tg", icon: Home, exact: true },
+  { label: "Order", href: "/tg/new-request", icon: PlusCircle },
+  { label: "Requests", href: "/tg/requests", icon: ClipboardList },
+  { label: "Messages", href: "/tg/messages", icon: MessageSquare },
+  { label: "Report", href: "/tg/report", icon: BarChart3 },
+];
+
 export function BottomNav() {
   const pathname = usePathname();
+  const { user } = useTelegram();
+
+  const tabs = user?.role === "RESTAURANT_STAFF" ? restaurantTabs : warehouseTabs;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-bottom">

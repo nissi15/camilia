@@ -135,13 +135,12 @@ function WarehouseLoginForm() {
               {loading ? "Signing in..." : "Sign in"}
             </button>
 
-            <div className="text-center space-y-1 pt-1">
-              <p className="text-[10px] font-mono text-[#6B7280] uppercase tracking-wider">Demo credentials</p>
-              <p className="text-[11px] font-mono text-[#9CA3AF]">
-                <span className="text-white/80">admin@stocktrace.com</span>{" "}
-                / admin123
-              </p>
-            </div>
+            <p className="text-center text-[11px] font-mono text-[#6B7280]">
+              New warehouse?{" "}
+              <Link href="/register" className="text-[#E8532E] hover:text-[#FF6B42]">
+                Register here
+              </Link>
+            </p>
           </form>
         </div>
       </div>

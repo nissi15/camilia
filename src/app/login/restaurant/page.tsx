@@ -135,13 +135,9 @@ function RestaurantLoginForm() {
               {loading ? "Signing in..." : "Sign in"}
             </button>
 
-            <div className="text-center space-y-1 pt-1">
-              <p className="text-[10px] font-mono text-[#6B7280] uppercase tracking-wider">Demo credentials</p>
-              <p className="text-[11px] font-mono text-[#9CA3AF]">
-                <span className="text-white/80">chef@downtown.com</span>{" "}
-                / chef123
-              </p>
-            </div>
+            <p className="text-center text-[11px] font-mono text-[#6B7280]">
+              Your account is created by your warehouse admin
+            </p>
           </form>
         </div>
       </div>

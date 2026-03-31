@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-guard";
+import { requireDualAuth } from "@/lib/telegram/auth-guard";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
-  const { error, session } = await requireAuth();
+  const { error, user } = await requireDualAuth(req);
   if (error) return error;
 
   const { conversationId } = await params;
@@ -19,11 +19,9 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Check access
-  const user = session!.user;
   if (
-    user.role === "RESTAURANT_STAFF" &&
-    conversation.restaurantId !== user.locationId
+    user!.role === "RESTAURANT_STAFF" &&
+    conversation.restaurantId !== user!.locationId
   ) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -32,7 +30,7 @@ export async function GET(
   await prisma.message.updateMany({
     where: {
       conversationId,
-      senderId: { not: user.id },
+      senderId: { not: user!.id },
       readAt: null,
     },
     data: { readAt: new Date() },
@@ -48,10 +46,10 @@ export async function GET(
 }
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
-  const { error, session } = await requireAuth();
+  const { error, user } = await requireDualAuth(req);
   if (error) return error;
 
   const { conversationId } = await params;
@@ -70,10 +68,9 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const user = session!.user;
   if (
-    user.role === "RESTAURANT_STAFF" &&
-    conversation.restaurantId !== user.locationId
+    user!.role === "RESTAURANT_STAFF" &&
+    conversation.restaurantId !== user!.locationId
   ) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -81,7 +78,7 @@ export async function POST(
   const message = await prisma.message.create({
     data: {
       conversationId,
-      senderId: user.id,
+      senderId: user!.id,
       content: content.trim(),
     },
     include: { sender: { select: { id: true, name: true, role: true } } },

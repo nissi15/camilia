@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTelegram } from "../providers";
 import { CameraButton } from "@/components/telegram/camera-button";
-import { ClipboardList, ChevronRight, Check, Clock, Truck, Package, X } from "lucide-react";
+import { ClipboardList, ChevronRight, Check, Clock, Truck, Package, X, PlusCircle } from "lucide-react";
+import Link from "next/link";
 
 interface RequestData {
   id: string;
@@ -84,10 +85,19 @@ export default function RequestsPage() {
         <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
           <ClipboardList className="w-5 h-5 text-white" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-lg font-bold text-gray-900">Requests</h1>
           <p className="text-xs text-gray-500">{isWarehouse ? "Manage orders" : "Your orders"}</p>
         </div>
+        {!isWarehouse && (
+          <Link
+            href="/tg/new-request"
+            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500 text-white rounded-xl text-xs font-semibold active:bg-emerald-600"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            New
+          </Link>
+        )}
       </div>
 
       {/* Tabs */}
@@ -157,6 +167,15 @@ export default function RequestsPage() {
                         </p>
                       </div>
                     </div>
+
+                    {/* View detail link */}
+                    <Link
+                      href={`/tg/requests/${req.id}`}
+                      className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 text-sm font-medium text-gray-600 active:bg-gray-100"
+                    >
+                      View full details
+                      <ChevronRight className="w-4 h-4" />
+                    </Link>
 
                     {/* Warehouse actions */}
                     {isWarehouse && req.status === "PENDING" && (

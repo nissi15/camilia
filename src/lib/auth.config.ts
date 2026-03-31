@@ -46,6 +46,7 @@ export const authConfig: NextAuthConfig = {
       // Public routes — no auth required
       if (pathname === "/") return true; // Landing page
       if (pathname === "/login" || pathname.startsWith("/login/")) return true;
+      if (pathname === "/register" || pathname.startsWith("/api/register")) return true;
       if (pathname.startsWith("/api/auth")) return true;
 
       // Telegram routes use their own auth (initData validation)

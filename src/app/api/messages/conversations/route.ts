@@ -1,17 +1,16 @@
-import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-guard";
+import { NextRequest, NextResponse } from "next/server";
+import { requireDualAuth } from "@/lib/telegram/auth-guard";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
-  const { error, session } = await requireAuth();
+export async function GET(req: NextRequest) {
+  const { error, user } = await requireDualAuth(req);
   if (error) return error;
 
-  const user = session!.user;
-  const locationId = user.locationId;
+  const locationId = user!.locationId;
 
   let conversations;
 
-  if (user.role === "WAREHOUSE_ADMIN") {
+  if (user!.role === "WAREHOUSE_ADMIN") {
     // Warehouse sees all conversations
     conversations = await prisma.conversation.findMany({
       include: {
@@ -24,7 +23,7 @@ export async function GET() {
         _count: {
           select: {
             messages: {
-              where: { readAt: null, senderId: { not: user.id } },
+              where: { readAt: null, senderId: { not: user!.id } },
             },
           },
         },
@@ -45,7 +44,7 @@ export async function GET() {
         _count: {
           select: {
             messages: {
-              where: { readAt: null, senderId: { not: user.id } },
+              where: { readAt: null, senderId: { not: user!.id } },
             },
           },
         },
