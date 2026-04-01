@@ -19,6 +19,7 @@ import {
   Warehouse,
   Bell,
   Settings,
+  Trash2,
 } from "lucide-react";
 
 interface NavItem {
@@ -35,6 +36,7 @@ const warehouseNav: NavItem[] = [
   { label: "Processing", href: "/processing", icon: Scissors },
   { label: "Requests", href: "/requests", icon: ClipboardList },
   { label: "Categories", href: "/categories", icon: Tags },
+  { label: "Waste Log", href: "/waste-log", icon: Trash2 },
   { label: "Reports", href: "/reports", icon: BarChart3, section: "INSIGHTS" },
   { label: "Messages", href: "/messages", icon: MessageSquare, section: "COMMUNICATION", badgeKey: "messages" },
   { label: "Notifications", href: "/notifications", icon: Bell, badgeKey: "notifications" },
