@@ -9,6 +9,7 @@ interface FeatureCardProps {
   description: string;
   color: string;
   index: number;
+  wide?: boolean;
 }
 
 export function FeatureCard({
@@ -17,20 +18,19 @@ export function FeatureCard({
   description,
   color,
   index,
+  wide,
 }: FeatureCardProps) {
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl",
+        "group relative overflow-hidden rounded-2xl h-full",
         "bg-[#0A0A0A] border border-[#1A1A1A]",
         "p-7 sm:p-8 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
         "hover:border-[#E8532E]/30 hover:shadow-[0_8px_30px_rgba(232,83,46,0.06)]",
         "hover:-translate-y-1.5",
         "cursor-pointer"
       )}
-      style={{
-        animationDelay: `${index * 80}ms`,
-      }}
+      style={{ animationDelay: `${index * 80}ms` }}
     >
       {/* Top accent line on hover */}
       <div
@@ -48,10 +48,17 @@ export function FeatureCard({
         }}
       />
 
-      <div className="relative z-10 space-y-5">
-        {/* Icon — larger, bolder like construction site cards */}
+      <div
+        className={cn(
+          "relative z-10",
+          wide
+            ? "flex items-start gap-6"
+            : "space-y-5"
+        )}
+      >
+        {/* Icon */}
         <div
-          className="inline-flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-400 group-hover:scale-110 group-hover:shadow-lg"
+          className="inline-flex h-14 w-14 items-center justify-center rounded-2xl shrink-0 transition-all duration-400 group-hover:scale-110 group-hover:shadow-lg"
           style={{
             backgroundColor: `${color}15`,
             boxShadow: `0 0 0 1px ${color}20`,

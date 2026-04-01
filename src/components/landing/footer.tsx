@@ -21,7 +21,7 @@ const footerLinks = {
 export function Footer() {
   return (
     <footer className="w-full bg-[#050505] text-white border-t border-[#1A1A1A]">
-      <div className="max-w-6xl mx-auto px-6 pt-16 pb-8">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 pt-16 pb-8">
         {/* Top section */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8 pb-12 border-b border-white/[0.06]">
           {/* Brand */}
@@ -63,7 +63,7 @@ export function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-8">
           <p className="text-xs text-white/20">
             &copy; {new Date().getFullYear()} StockTrace. All rights reserved.
           </p>
