@@ -103,13 +103,15 @@ export default function WasteLogPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleDaysChange = (value: string) => {
-    setDays(value);
-    setPage(1);
+  const handleDaysChange = (value: string | null) => {
+    if (value) {
+      setDays(value);
+      setPage(1);
+    }
   };
 
-  const handleCategoryChange = (value: string) => {
-    setCategoryFilter(value === "all" ? "" : value);
+  const handleCategoryChange = (value: string | null) => {
+    setCategoryFilter(!value || value === "all" ? "" : value);
     setPage(1);
   };
 
