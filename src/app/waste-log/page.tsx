@@ -252,6 +252,7 @@ export default function WasteLogPage() {
             <Select
               value={categoryFilter || "all"}
               onValueChange={handleCategoryChange}
+              items={{ all: "All categories", ...Object.fromEntries(categories.map(c => [c.id, c.name])) }}
             >
               <SelectTrigger className="w-[180px] h-9 rounded-lg text-sm">
                 <SelectValue placeholder="All categories" />

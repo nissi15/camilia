@@ -299,13 +299,9 @@ export default function CategoriesPage() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-medium text-on-surface">Parent Category</Label>
-              <Select value={form.parentId || "NONE"} onValueChange={(v) => setForm(f => ({ ...f, parentId: v === "NONE" ? "" : (v ?? "") }))}>
+              <Select value={form.parentId || "NONE"} onValueChange={(v) => setForm(f => ({ ...f, parentId: v === "NONE" ? "" : (v ?? "") }))} items={{ NONE: "None (top-level)", ...Object.fromEntries(flatCategories.filter(c => c.id !== editId).map(c => [c.id, c.name])) }}>
                 <SelectTrigger className="rounded-xl h-9">
-                  <SelectValue placeholder="None (top-level)">
-                    {form.parentId
-                      ? (flatCategories.find(c => c.id === form.parentId)?.name ?? "None (top-level)")
-                      : "None (top-level)"}
-                  </SelectValue>
+                  <SelectValue placeholder="None (top-level)" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="NONE">None (top-level)</SelectItem>

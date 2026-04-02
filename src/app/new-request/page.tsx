@@ -155,7 +155,7 @@ export default function NewRequestPage() {
                     {/* Category */}
                     <div>
                       <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest sm:hidden mb-1 block">Category</span>
-                      <Select value={item.categoryId} onValueChange={(v) => updateItem(idx, "categoryId", v ?? "")}>
+                      <Select value={item.categoryId} onValueChange={(v) => updateItem(idx, "categoryId", v ?? "")} items={Object.fromEntries(categories.map(c => [c.id, c.name]))}>
                         <SelectTrigger className="rounded-lg border-outline-variant/30 h-9 text-sm">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
@@ -193,7 +193,7 @@ export default function NewRequestPage() {
                       </div>
                       <div className="flex-1 sm:flex-none">
                         <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest sm:hidden mb-1 block">Unit</span>
-                        <Select value={item.unitLabel} onValueChange={(v) => updateItem(idx, "unitLabel", v ?? "piece")}>
+                        <Select value={item.unitLabel} onValueChange={(v) => updateItem(idx, "unitLabel", v ?? "piece")} items={Object.fromEntries(UNIT_OPTIONS.map(u => [u.value, u.label]))}>
                           <SelectTrigger className="rounded-lg border-outline-variant/30 h-9 text-sm">
                             <SelectValue />
                           </SelectTrigger>

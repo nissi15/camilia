@@ -123,6 +123,7 @@ export default function ReceiveIngredientPage() {
               <Select
                 value={form.categoryId}
                 onValueChange={(v) => setForm((f) => ({ ...f, categoryId: v ?? "" }))}
+                items={Object.fromEntries(categories.map(c => [c.id, c.name]))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
@@ -193,6 +194,7 @@ export default function ReceiveIngredientPage() {
                   <Select
                     value={form.unitLabel}
                     onValueChange={(v) => setForm((f) => ({ ...f, unitLabel: v ?? "piece" }))}
+                    items={Object.fromEntries(UNIT_OPTIONS.map(u => [u.value, u.label]))}
                   >
                     <SelectTrigger className="w-28 rounded-lg">
                       <SelectValue />
