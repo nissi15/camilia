@@ -16,6 +16,7 @@ interface TgContextValue {
   user: TgUser | null;
   loading: boolean;
   initData: string;
+  debugInfo: string;
   apiFetch: (url: string, opts?: RequestInit) => Promise<Response>;
 }
 
@@ -23,6 +24,7 @@ const TgContext = createContext<TgContextValue>({
   user: null,
   loading: true,
   initData: "",
+  debugInfo: "",
   apiFetch: () => Promise.reject("Not initialized"),
 });
 
@@ -36,6 +38,7 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<TgUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [initData, setInitData] = useState("");
+  const [debugInfo, setDebugInfo] = useState("");
   const sessionTokenRef = useRef<string>("");
 
   useEffect(() => {
@@ -57,58 +60,70 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
     async function authenticate(data: string) {
       if (cancelled) return;
       setInitData(data);
+      const logs: string[] = [`initData length: ${data.length}`];
 
       // Try initData auth first
       if (data) {
         try {
+          logs.push("Calling /api/telegram/me with tma...");
           const res = await fetch("/api/telegram/me", {
             headers: { Authorization: `tma ${data}` },
           });
+          logs.push(`Response: ${res.status}`);
           if (res.ok) {
             const json = await res.json();
             if (!cancelled) {
               const { sessionToken, ...userData } = json;
               setUser(userData);
-              // Persist session token for future use
               if (sessionToken) {
                 sessionTokenRef.current = sessionToken;
                 try { localStorage.setItem(SESSION_KEY, sessionToken); } catch { /* ignore */ }
               }
+              setDebugInfo(logs.join("\n"));
               setLoading(false);
               return;
             }
+          } else {
+            const body = await res.text();
+            logs.push(`Error body: ${body}`);
           }
-        } catch { /* fall through to session token */ }
+        } catch (e) {
+          logs.push(`Fetch error: ${e}`);
+        }
       }
 
       // Fallback: try stored session token
       const storedToken = (() => { try { return localStorage.getItem(SESSION_KEY); } catch { return null; } })();
+      logs.push(`Session token: ${storedToken ? "found" : "none"}`);
       if (storedToken) {
         try {
           const res = await fetch("/api/telegram/me", {
             headers: { Authorization: `tma-session ${storedToken}` },
           });
+          logs.push(`Session response: ${res.status}`);
           if (res.ok) {
             const json = await res.json();
             if (!cancelled) {
               const { sessionToken, ...userData } = json;
               setUser(userData);
-              // Refresh the token
               if (sessionToken) {
                 sessionTokenRef.current = sessionToken;
                 try { localStorage.setItem(SESSION_KEY, sessionToken); } catch { /* ignore */ }
               }
+              setDebugInfo(logs.join("\n"));
               setLoading(false);
               return;
             }
           } else {
-            // Token invalid/revoked — clear it
             try { localStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
           }
         } catch { /* ignore */ }
       }
 
-      if (!cancelled) setLoading(false);
+      if (!cancelled) {
+        setDebugInfo(logs.join("\n"));
+        setLoading(false);
+      }
     }
 
     // Poll for Telegram WebApp SDK to load
@@ -158,7 +173,7 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <TgContext.Provider value={{ user, loading, initData, apiFetch }}>
+    <TgContext.Provider value={{ user, loading, initData, debugInfo, apiFetch }}>
       {children}
     </TgContext.Provider>
   );

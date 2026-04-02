@@ -4,7 +4,7 @@ import { useTelegram } from "@/app/tg/providers";
 import { ShieldX, MessageCircle, KeyRound, CheckCircle2 } from "lucide-react";
 
 export function AccessGate({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useTelegram();
+  const { user, loading, debugInfo } = useTelegram();
 
   if (loading) {
     return (
@@ -75,6 +75,13 @@ export function AccessGate({ children }: { children: React.ReactNode }) {
               </div>
             </div>
           </div>
+
+          {/* Debug info — remove after fixing */}
+          {debugInfo && (
+            <div className="tg-card p-3 text-left">
+              <p className="text-[10px] font-mono text-on-surface-variant whitespace-pre-wrap break-all">{debugInfo}</p>
+            </div>
+          )}
 
           {/* Footer */}
           <p className="text-[11px] text-on-surface-variant/60">
