@@ -16,7 +16,7 @@ const warehouseActions: QuickAction[] = [
   { label: "Process", href: "/tg/process", icon: Scissors, desc: "Butcher & portion items" },
   { label: "Requests", href: "/tg/requests", icon: ClipboardList, desc: "View & manage orders" },
   { label: "Stock Check", href: "/tg/stock", icon: Package, desc: "Current inventory levels" },
-  { label: "Quick Report", href: "/tg/report", icon: BarChart3, desc: "Today's summary" },
+  { label: "Messages", href: "/tg/messages", icon: MessageSquare, desc: "Chat with restaurants" },
 ];
 
 const restaurantActions: QuickAction[] = [

@@ -26,7 +26,7 @@ const warehouseTabs: Tab[] = [
   { label: "Receive", href: "/tg/receive", icon: PackageOpen },
   { label: "Requests", href: "/tg/requests", icon: ClipboardList },
   { label: "Stock", href: "/tg/stock", icon: Package },
-  { label: "Report", href: "/tg/report", icon: BarChart3 },
+  { label: "Messages", href: "/tg/messages", icon: MessageSquare },
 ];
 
 const restaurantTabs: Tab[] = [
