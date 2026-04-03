@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { gramsToLb, lbToGrams } from "@/lib/constants";
+import { gramsToKg, kgToGrams } from "@/lib/constants";
 import { Scissors, Package, Grid3X3, Beef, Plus, Trash2, Check, Search, ChevronRight, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -141,12 +141,12 @@ function ProcessingContent() {
     );
   }
 
-  const inputWeightLb = selectedItem?.weightGrams
-    ? gramsToLb(Number(selectedItem.weightGrams))
+  const inputWeightKg = selectedItem?.weightGrams
+    ? gramsToKg(Number(selectedItem.weightGrams))
     : 0;
-  const totalOutputLb = outputs.reduce((sum, o) => sum + (parseFloat(o.weight) || 0), 0);
-  const calculatedWaste = Math.max(0, inputWeightLb - totalOutputLb);
-  const efficiency = inputWeightLb > 0 ? ((totalOutputLb / inputWeightLb) * 100).toFixed(1) : "0.0";
+  const totalOutputKg = outputs.reduce((sum, o) => sum + (parseFloat(o.weight) || 0), 0);
+  const calculatedWaste = Math.max(0, inputWeightKg - totalOutputKg);
+  const efficiency = inputWeightKg > 0 ? ((totalOutputKg / inputWeightKg) * 100).toFixed(1) : "0.0";
 
   async function handleSubmit() {
     setError("");
@@ -158,14 +158,14 @@ function ProcessingContent() {
       stepLabel: stepType === "CUSTOM" ? stepLabel : undefined,
       outputs: outputs.map((o) => ({
         name: o.name,
-        weightGrams: o.weight ? lbToGrams(parseFloat(o.weight)) : undefined,
+        weightGrams: o.weight ? kgToGrams(parseFloat(o.weight)) : undefined,
         unitCount: parseInt(o.unitCount) || 1,
         unitLabel: o.unitLabel,
         categoryId: o.categoryId || selectedItem!.category.id,
       })),
       wasteWeight: wasteWeight
-        ? lbToGrams(parseFloat(wasteWeight))
-        : lbToGrams(calculatedWaste),
+        ? kgToGrams(parseFloat(wasteWeight))
+        : kgToGrams(calculatedWaste),
       notes: notes || undefined,
     };
 
@@ -238,7 +238,7 @@ function ProcessingContent() {
                       <p className="text-sm font-medium text-on-surface">{item.name}</p>
                       <p className="text-xs text-on-surface-variant mt-0.5">
                         Batch #{item.batchCode}
-                        {item.weightGrams ? ` \u00B7 ${gramsToLb(Number(item.weightGrams))} lb` : ""}
+                        {item.weightGrams ? ` \u00B7 ${gramsToKg(Number(item.weightGrams))} kg` : ""}
                       </p>
                     </button>
                   ))}
@@ -357,7 +357,7 @@ function ProcessingContent() {
                       <div className="grid grid-cols-3 gap-4">
                         <div>
                           <p className="text-xs text-on-surface-variant mb-0.5">Weight</p>
-                          <p className="text-sm font-medium text-on-surface">{inputWeightLb} lb</p>
+                          <p className="text-sm font-medium text-on-surface">{inputWeightKg} kg</p>
                         </div>
                         <div>
                           <p className="text-xs text-on-surface-variant mb-0.5">Count</p>
@@ -483,7 +483,7 @@ function ProcessingContent() {
                       </div>
                       <div className="px-4 py-3 flex items-center justify-between">
                         <span className="text-sm text-on-surface-variant">Source</span>
-                        <span className="text-sm font-medium text-on-surface">{selectedItem.name} &middot; {inputWeightLb} lb</span>
+                        <span className="text-sm font-medium text-on-surface">{selectedItem.name} &middot; {inputWeightKg} kg</span>
                       </div>
                       {notes && (
                         <div className="px-4 py-3 flex items-center justify-between">
@@ -500,13 +500,13 @@ function ProcessingContent() {
                         {outputs.map((o, idx) => (
                           <div key={idx} className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
                             <span className="text-sm font-medium text-on-surface">{o.name}</span>
-                            <span className="text-sm text-on-surface-variant">{o.weight || "?"} lb &middot; {o.unitCount} {o.unitLabel}</span>
+                            <span className="text-sm text-on-surface-variant">{o.weight || "?"} kg &middot; {o.unitCount} {o.unitLabel}</span>
                           </div>
                         ))}
                         {(parseFloat(wasteWeight) || calculatedWaste) > 0 && (
                           <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-amber-500/5 border border-amber-500/15">
                             <span className="text-sm font-medium text-amber-700 dark:text-amber-500">Waste</span>
-                            <span className="text-sm text-on-surface-variant">{wasteWeight || calculatedWaste.toFixed(2)} lb</span>
+                            <span className="text-sm text-on-surface-variant">{wasteWeight || calculatedWaste.toFixed(2)} kg</span>
                           </div>
                         )}
                       </div>

@@ -15,14 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { lbToGrams, kgToGrams } from "@/lib/constants";
+import { kgToGrams, lbToGrams } from "@/lib/constants";
 import { toast } from "sonner";
 
 const UNIT_OPTIONS = [
-  { value: "piece", label: "Piece" },
   { value: "kg",    label: "Kg" },
-  { value: "lb",    label: "Lb" },
+  { value: "piece", label: "Piece" },
   { value: "g",     label: "Grams" },
+  { value: "lb",    label: "Lb" },
   { value: "oz",    label: "Oz" },
   { value: "liter", label: "Liter" },
   { value: "case",  label: "Case" },
@@ -43,7 +43,7 @@ export default function ReceiveIngredientPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [weightUnit, setWeightUnit] = useState<"lb" | "kg">("lb");
+  const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg");
 
   const [form, setForm] = useState({
     categoryId: "",

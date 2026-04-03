@@ -9,7 +9,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { gramsToLb } from "@/lib/constants";
+import { gramsToKg } from "@/lib/constants";
 import { TrendingUp, AlertTriangle, Download, Weight, BarChart3, Layers, Package, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -159,7 +159,7 @@ export default function ReportsPage() {
                     <div className="space-y-1">
                       <p className="text-sm text-on-surface-variant">Total Waste Mass</p>
                       <p className="text-2xl font-semibold tracking-tight text-on-surface">
-                        {gramsToLb(totalWasteLb)} lb
+                        {gramsToKg(totalWasteLb)} kg
                       </p>
                       <p className="text-xs text-on-surface-variant">Overall {overallWastePct}% waste</p>
                     </div>
@@ -243,9 +243,9 @@ export default function ReportsPage() {
                   <TableHeader>
                     <TableRow className="border-outline-variant/15 hover:bg-transparent">
                       <TableHead className="text-xs font-medium text-on-surface-variant">Category</TableHead>
-                      <TableHead className="text-xs font-medium text-on-surface-variant">Total Input (lb)</TableHead>
-                      <TableHead className="text-xs font-medium text-on-surface-variant">Total Output (lb)</TableHead>
-                      <TableHead className="text-xs font-medium text-on-surface-variant">Waste (lb)</TableHead>
+                      <TableHead className="text-xs font-medium text-on-surface-variant">Total Input (kg)</TableHead>
+                      <TableHead className="text-xs font-medium text-on-surface-variant">Total Output (kg)</TableHead>
+                      <TableHead className="text-xs font-medium text-on-surface-variant">Waste (kg)</TableHead>
                       <TableHead className="text-xs font-medium text-on-surface-variant text-right">Waste %</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -255,9 +255,9 @@ export default function ReportsPage() {
                         <TableCell>
                           <span className="text-sm font-medium text-on-surface">{w.name}</span>
                         </TableCell>
-                        <TableCell className="text-sm text-on-surface-variant tabular-nums">{gramsToLb(w.inputWeight)}</TableCell>
-                        <TableCell className="text-sm text-on-surface-variant tabular-nums">{gramsToLb(w.outputWeight)}</TableCell>
-                        <TableCell className="text-sm font-medium text-on-surface tabular-nums">{gramsToLb(w.wasteWeight)}</TableCell>
+                        <TableCell className="text-sm text-on-surface-variant tabular-nums">{gramsToKg(w.inputWeight)}</TableCell>
+                        <TableCell className="text-sm text-on-surface-variant tabular-nums">{gramsToKg(w.outputWeight)}</TableCell>
+                        <TableCell className="text-sm font-medium text-on-surface tabular-nums">{gramsToKg(w.wasteWeight)}</TableCell>
                         <TableCell className="text-right">
                           <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md ${
                             w.wastePercentage > 15 ? "bg-error/10 text-error" :

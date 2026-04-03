@@ -27,10 +27,10 @@ interface RequestItemForm {
 }
 
 const UNIT_OPTIONS = [
-  { value: "piece", label: "Piece" },
   { value: "kg",    label: "Kg" },
-  { value: "lb",    label: "Lb" },
+  { value: "piece", label: "Piece" },
   { value: "g",     label: "Grams" },
+  { value: "lb",    label: "Lb" },
   { value: "oz",    label: "Oz" },
   { value: "liter", label: "Liter" },
   { value: "case",  label: "Case" },

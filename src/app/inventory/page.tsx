@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, Package, ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
-import { gramsToLb } from "@/lib/constants";
+import { gramsToKg } from "@/lib/constants";
 
 interface InventoryItem {
   id: string;
@@ -288,7 +288,7 @@ export default function InventoryPage() {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-sm text-on-surface-variant tabular-nums text-right">
                       {item.weightGrams
-                        ? `${gramsToLb(Number(item.weightGrams))} lb`
+                        ? `${gramsToKg(Number(item.weightGrams))} kg`
                         : "\u2014"}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-sm text-on-surface-variant tabular-nums text-right">

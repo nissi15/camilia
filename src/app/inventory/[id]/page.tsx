@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Separator } from "@/components/ui/separator";
-import { gramsToLb, STEP_TYPE_LABELS } from "@/lib/constants";
+import { gramsToKg, STEP_TYPE_LABELS } from "@/lib/constants";
 import { ArrowLeft, GitBranch, Scissors } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -130,7 +130,7 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
                 label="Weight"
                 value={
                   item.weightGrams
-                    ? `${gramsToLb(Number(item.weightGrams))} lb`
+                    ? `${gramsToKg(Number(item.weightGrams))} kg`
                     : "—"
                 }
               />
@@ -210,12 +210,12 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
                     <div className="text-xs text-muted-foreground space-y-0.5">
                       {step.inputWeight && (
                         <p>
-                          Input: {gramsToLb(Number(step.inputWeight))} lb →
-                          Output: {gramsToLb(Number(step.outputWeight || 0))} lb
+                          Input: {gramsToKg(Number(step.inputWeight))} lb →
+                          Output: {gramsToKg(Number(step.outputWeight || 0))} lb
                           {step.wasteWeight && Number(step.wasteWeight) > 0 && (
                             <span className="text-error">
                               {" "}
-                              (Waste: {gramsToLb(Number(step.wasteWeight))} lb)
+                              (Waste: {gramsToKg(Number(step.wasteWeight))} kg)
                             </span>
                           )}
                         </p>
@@ -233,7 +233,7 @@ export default function InventoryDetailPage({ params }: { params: Promise<{ id: 
                           >
                             → {o.outputItem.name}{" "}
                             {o.outputItem.weightGrams &&
-                              `(${gramsToLb(Number(o.outputItem.weightGrams))} lb)`}
+                              `(${gramsToKg(Number(o.outputItem.weightGrams))} kg)`}
                             <StatusBadge
                               status={o.outputItem.status}
                               className="ml-2"
@@ -322,7 +322,7 @@ function LineageNode({
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>{item.category.name}</span>
             {item.weightGrams && (
-              <span>&middot; {gramsToLb(Number(item.weightGrams))} lb</span>
+              <span>&middot; {gramsToKg(Number(item.weightGrams))} lb</span>
             )}
             <span>&middot; {item.unitCount} pcs</span>
           </div>

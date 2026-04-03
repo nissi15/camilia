@@ -30,7 +30,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import Link from "next/link";
-import { gramsToLb, STEP_TYPE_LABELS } from "@/lib/constants";
+import { gramsToKg, STEP_TYPE_LABELS } from "@/lib/constants";
 
 interface WasteItem {
   id: string;
@@ -138,7 +138,7 @@ export default function WasteLogPage() {
                     Total Waste
                   </p>
                   <p className="text-2xl font-bold text-on-surface tracking-tight leading-none mt-0.5">
-                    {gramsToLb(stats.totalWasteGrams).toFixed(1)} lb
+                    {gramsToKg(stats.totalWasteGrams).toFixed(1)} kg
                   </p>
                   <p className="text-[11px] text-on-surface-variant mt-0.5">
                     {stats.totalWasteItems} items in {days} days
@@ -184,7 +184,7 @@ export default function WasteLogPage() {
                   </p>
                   {stats.topCategories[0] && (
                     <p className="text-[11px] text-on-surface-variant mt-0.5">
-                      {gramsToLb(stats.topCategories[0].totalGrams).toFixed(1)} lb across {stats.topCategories[0].count} items
+                      {gramsToKg(stats.topCategories[0].totalGrams).toFixed(1)} kg across {stats.topCategories[0].count} items
                     </p>
                   )}
                 </div>
@@ -218,7 +218,7 @@ export default function WasteLogPage() {
                         style={{ width: `${Math.max(pct, 8)}%` }}
                       >
                         <span className="text-[10px] font-bold text-white whitespace-nowrap">
-                          {gramsToLb(cat.totalGrams).toFixed(1)} lb
+                          {gramsToKg(cat.totalGrams).toFixed(1)} kg
                         </span>
                       </div>
                     </div>
@@ -351,7 +351,7 @@ export default function WasteLogPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <span className="text-sm font-semibold text-error tabular-nums">
-                        {gramsToLb(item.weightGrams).toFixed(2)}
+                        {gramsToKg(item.weightGrams).toFixed(2)}
                       </span>
                     </TableCell>
                     <TableCell className="text-sm text-on-surface-variant">
