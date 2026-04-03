@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -11,6 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { X } from "lucide-react";
 import Link from "next/link";
 
 interface RequestItem {
@@ -21,28 +23,42 @@ interface RequestItem {
   requestedAt: string;
   restaurant: { name: string };
   requester: { name: string };
-  _count: { items: number };
+  _count: { items: number; fulfilledItems: number };
 }
 
 export default function RequestsPage() {
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
+  const [restaurantFilter, setRestaurantFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [restaurants, setRestaurants] = useState<Array<{ id: string; name: string }>>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    fetch("/api/admin/restaurants")
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setRestaurants(Array.isArray(data) ? data : data.restaurants || []))
+      .catch(() => {});
+  }, []);
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams();
     params.set("page", String(page));
     if (statusFilter) params.set("status", statusFilter);
+    if (restaurantFilter) params.set("restaurantId", restaurantFilter);
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
 
     const res = await fetch(`/api/requests?${params}`);
     const data = await res.json();
     setRequests(data.requests || []);
     setTotalPages(data.totalPages || 1);
     setLoading(false);
-  }, [page, statusFilter]);
+  }, [page, statusFilter, restaurantFilter, startDate, endDate]);
 
   useEffect(() => {
     fetchRequests();
@@ -61,50 +77,67 @@ export default function RequestsPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <Select
+          value={statusFilter || "ALL"}
+          onValueChange={(v) => { setStatusFilter(!v || v === "ALL" ? "" : v ?? ""); setPage(1); }}
+        >
+          <SelectTrigger className="w-[150px] rounded-xl h-9 text-sm bg-surface-container/40 border-outline-variant/10">
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All Statuses</SelectItem>
+            <SelectItem value="PENDING">Pending</SelectItem>
+            <SelectItem value="PACKING">Packing</SelectItem>
+            <SelectItem value="DISPATCHED">Dispatched</SelectItem>
+            <SelectItem value="DELIVERED">Delivered</SelectItem>
+            <SelectItem value="CANCELLED">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+        {restaurants.length > 0 && (
           <Select
-            value={statusFilter}
-            onValueChange={(v) => { setStatusFilter(v === "ALL" ? "" : v ?? ""); setPage(1); }}
+            value={restaurantFilter || "ALL"}
+            onValueChange={(v) => { setRestaurantFilter(!v || v === "ALL" ? "" : v ?? ""); setPage(1); }}
           >
-            <SelectTrigger className="w-[160px] rounded-lg h-9 text-sm font-medium border-outline-variant/15">
-              <SelectValue placeholder="All Statuses" />
+            <SelectTrigger className="w-[170px] rounded-xl h-9 text-sm bg-surface-container/40 border-outline-variant/10">
+              <SelectValue placeholder="All Restaurants" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Statuses</SelectItem>
-              <SelectItem value="PENDING">Pending</SelectItem>
-              <SelectItem value="PACKING">Packing</SelectItem>
-              <SelectItem value="DISPATCHED">Dispatched</SelectItem>
-              <SelectItem value="DELIVERED">Delivered</SelectItem>
-              <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              <SelectItem value="ALL">All Restaurants</SelectItem>
+              {restaurants.map((r) => (
+                <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
-        </div>
-
-        {totalPages > 1 && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm text-on-surface-variant mr-2">
-              Page {page} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-lg h-9 text-sm font-medium"
-              disabled={page <= 1}
-              onClick={() => setPage(p => p - 1)}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-lg h-9 text-sm font-medium"
-              disabled={page >= totalPages}
-              onClick={() => setPage(p => p + 1)}
-            >
-              Next
-            </Button>
-          </div>
+        )}
+        <Input
+          type="date"
+          value={startDate}
+          onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+          className="w-[140px] h-9 rounded-xl text-sm bg-surface-container/40 border-outline-variant/10"
+        />
+        <Input
+          type="date"
+          value={endDate}
+          onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+          className="w-[140px] h-9 rounded-xl text-sm bg-surface-container/40 border-outline-variant/10"
+        />
+        {(statusFilter || restaurantFilter || startDate || endDate) && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 rounded-xl text-sm border-outline-variant/10 text-on-surface-variant gap-1.5 px-3"
+            onClick={() => {
+              setStatusFilter("");
+              setRestaurantFilter("");
+              setStartDate("");
+              setEndDate("");
+              setPage(1);
+            }}
+          >
+            <X className="w-3.5 h-3.5" />
+            Clear
+          </Button>
         )}
       </div>
 
@@ -170,8 +203,9 @@ export default function RequestsPage() {
                     <TableCell className="py-3">
                       <StatusBadge status={req.priority} />
                     </TableCell>
-                    <TableCell className="py-3 text-sm text-on-surface-variant tabular-nums text-right">
-                      {req._count.items}
+                    <TableCell className="py-3 text-sm tabular-nums text-right">
+                      <span className="text-on-surface font-medium">{req._count.fulfilledItems}</span>
+                      <span className="text-on-surface-variant">/{req._count.items}</span>
                     </TableCell>
                     <TableCell className="py-3 pr-4 text-sm text-on-surface-variant text-right">
                       {new Date(req.requestedAt).toLocaleDateString()}

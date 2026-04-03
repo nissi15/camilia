@@ -20,7 +20,7 @@ interface RequestItem {
   status: string;
   priority: string;
   requestedAt: string;
-  _count: { items: number };
+  _count: { items: number; fulfilledItems: number };
 }
 
 type StatusTab = "ALL" | "PENDING" | "PACKING" | "DISPATCHED" | "DELIVERED" | "CANCELLED";
@@ -146,7 +146,9 @@ export default function MyRequestsPage() {
                     </TableCell>
                     <TableCell><StatusBadge status={req.status} /></TableCell>
                     <TableCell><StatusBadge status={req.priority} /></TableCell>
-                    <TableCell className="text-on-surface-variant">{req._count.items} items</TableCell>
+                    <TableCell className="text-on-surface-variant tabular-nums">
+                      <span className="font-medium text-on-surface">{req._count.fulfilledItems}</span>/{req._count.items} items
+                    </TableCell>
                     <TableCell className="text-on-surface-variant text-sm">
                       {new Date(req.requestedAt).toLocaleDateString()}
                     </TableCell>
@@ -182,7 +184,7 @@ export default function MyRequestsPage() {
                   </div>
                   <div className="flex items-center gap-3 text-xs text-on-surface-variant">
                     <StatusBadge status={req.priority} />
-                    <span>{req._count.items} items</span>
+                    <span className="tabular-nums"><span className="font-medium">{req._count.fulfilledItems}</span>/{req._count.items} items</span>
                     <span className="ml-auto">{new Date(req.requestedAt).toLocaleDateString()}</span>
                   </div>
                 </CardContent>

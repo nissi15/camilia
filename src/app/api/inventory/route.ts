@@ -13,6 +13,8 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status");
   const categoryId = searchParams.get("categoryId");
   const search = searchParams.get("search");
+  const startDate = searchParams.get("startDate");
+  const endDate = searchParams.get("endDate");
   const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
   const limit = Math.max(1, Math.min(parseInt(searchParams.get("limit") || "20") || 20, 100));
 
@@ -30,6 +32,16 @@ export async function GET(req: NextRequest) {
       { name: { contains: search, mode: "insensitive" } },
       { batchCode: { contains: search, mode: "insensitive" } },
     ];
+  }
+  if (startDate || endDate) {
+    const dateFilter: Record<string, Date> = {};
+    if (startDate) dateFilter.gte = new Date(startDate);
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateFilter.lte = end;
+    }
+    where.receivedAt = dateFilter;
   }
 
   const [items, total] = await Promise.all([

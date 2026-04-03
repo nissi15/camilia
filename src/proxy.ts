@@ -6,7 +6,7 @@ const { auth } = NextAuth(authConfig);
 const warehouseRoutes = ["/dashboard", "/inventory", "/processing", "/requests", "/reports", "/categories"];
 const restaurantRoutes = ["/my-dashboard", "/my-requests", "/new-request"];
 const sharedRoutes = ["/messages", "/notifications", "/settings"];
-const publicRoutes = ["/login"];
+const publicRoutes = ["/login", "/register"];
 
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;

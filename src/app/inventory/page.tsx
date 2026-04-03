@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Package, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { Plus, Search, Package, ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import { gramsToLb } from "@/lib/constants";
 
@@ -54,6 +54,8 @@ export default function InventoryPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -72,6 +74,8 @@ export default function InventoryPage() {
     if (debouncedSearch) params.set("search", debouncedSearch);
     if (statusFilter) params.set("status", statusFilter);
     if (categoryFilter) params.set("categoryId", categoryFilter);
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
 
     const res = await fetch(`/api/inventory?${params}`);
     const data = await res.json();
@@ -79,7 +83,7 @@ export default function InventoryPage() {
     setTotal(data.total || 0);
     setTotalPages(data.totalPages || 1);
     setLoading(false);
-  }, [page, debouncedSearch, statusFilter, categoryFilter]);
+  }, [page, debouncedSearch, statusFilter, categoryFilter, startDate, endDate]);
 
   useEffect(() => {
     fetchItems();
@@ -114,56 +118,93 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* Filters — Prodex-inspired toolbar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant/50" />
-          <Input
-            placeholder="Search by name or batch code..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 rounded-xl text-sm bg-surface-container/40 border-outline-variant/10 focus:border-tertiary/40"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Select
-            value={statusFilter}
-            onValueChange={(v) => {
-              setStatusFilter(!v || v === "ALL" ? "" : v ?? "");
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-[150px] h-9 rounded-xl text-sm bg-surface-container/40 border-outline-variant/10">
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Statuses</SelectItem>
-              <SelectItem value="RECEIVED">Received</SelectItem>
-              <SelectItem value="IN_PROCESSING">In Processing</SelectItem>
-              <SelectItem value="PROCESSED">Processed</SelectItem>
-              <SelectItem value="PACKAGED">Packaged</SelectItem>
-              <SelectItem value="DISPATCHED">Dispatched</SelectItem>
-              <SelectItem value="DELIVERED">Delivered</SelectItem>
-              <SelectItem value="WASTE">Waste</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 rounded-xl text-sm border-outline-variant/10 text-on-surface-variant gap-1.5 px-3"
-            onClick={() => {
-              setStatusFilter("");
-              setCategoryFilter("");
-              setSearch("");
-              setPage(1);
-            }}
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            Filter
-          </Button>
+      {/* Filters */}
+      <div className="flex flex-col gap-2 mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant/50" />
+            <Input
+              placeholder="Search by name or batch code..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9 rounded-xl text-sm bg-surface-container/40 border-outline-variant/10 focus:border-tertiary/40"
+            />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Select
+              value={statusFilter || "ALL"}
+              onValueChange={(v) => {
+                setStatusFilter(!v || v === "ALL" ? "" : v ?? "");
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[150px] h-9 rounded-xl text-sm bg-surface-container/40 border-outline-variant/10">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Statuses</SelectItem>
+                <SelectItem value="RECEIVED">Received</SelectItem>
+                <SelectItem value="IN_PROCESSING">In Processing</SelectItem>
+                <SelectItem value="PROCESSED">Processed</SelectItem>
+                <SelectItem value="PACKAGED">Packaged</SelectItem>
+                <SelectItem value="DISPATCHED">Dispatched</SelectItem>
+                <SelectItem value="DELIVERED">Delivered</SelectItem>
+                <SelectItem value="WASTE">Waste</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={categoryFilter || "ALL"}
+              onValueChange={(v) => {
+                setCategoryFilter(!v || v === "ALL" ? "" : v ?? "");
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[160px] h-9 rounded-xl text-sm bg-surface-container/40 border-outline-variant/10">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Categories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+              className="w-[140px] h-9 rounded-xl text-sm bg-surface-container/40 border-outline-variant/10"
+              placeholder="From"
+            />
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+              className="w-[140px] h-9 rounded-xl text-sm bg-surface-container/40 border-outline-variant/10"
+              placeholder="To"
+            />
+            {(statusFilter || categoryFilter || search || startDate || endDate) && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-xl text-sm border-outline-variant/10 text-on-surface-variant gap-1.5 px-3"
+                onClick={() => {
+                  setStatusFilter("");
+                  setCategoryFilter("");
+                  setSearch("");
+                  setStartDate("");
+                  setEndDate("");
+                  setPage(1);
+                }}
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
         {total > 0 && (
-          <span className="text-xs text-on-surface-variant ml-auto tabular-nums font-medium">
+          <span className="text-xs text-on-surface-variant tabular-nums font-medium">
             {total} item{total !== 1 ? "s" : ""}
           </span>
         )}

@@ -13,6 +13,9 @@ export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const status = searchParams.get("status");
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    const restaurantId = searchParams.get("restaurantId");
     const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
     const limit = Math.max(1, Math.min(parseInt(searchParams.get("limit") || "20") || 20, 100));
 
@@ -21,6 +24,8 @@ export async function GET(req: NextRequest) {
     // Restaurant staff only sees their own requests
     if (user!.role === "RESTAURANT_STAFF") {
       where.restaurantId = user!.locationId;
+    } else if (restaurantId) {
+      where.restaurantId = restaurantId;
     }
 
     if (status && status !== "ALL") {
@@ -29,6 +34,16 @@ export async function GET(req: NextRequest) {
         where.status = statuses.length > 1 ? { in: statuses } : statuses[0];
       }
     }
+    if (startDate || endDate) {
+      const dateFilter: Record<string, Date> = {};
+      if (startDate) dateFilter.gte = new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        dateFilter.lte = end;
+      }
+      where.requestedAt = dateFilter;
+    }
 
     const [requests, total] = await Promise.all([
       prisma.request.findMany({
@@ -36,6 +51,7 @@ export async function GET(req: NextRequest) {
         include: {
           restaurant: true,
           requester: { select: { id: true, name: true, email: true, role: true } },
+          items: { select: { status: true } },
           _count: { select: { items: true } },
         },
         orderBy: { requestedAt: "desc" },
@@ -45,8 +61,16 @@ export async function GET(req: NextRequest) {
       prisma.request.count({ where }),
     ]);
 
+    const requestsWithFulfilled = requests.map(({ items, ...rest }) => ({
+      ...rest,
+      _count: {
+        ...rest._count,
+        fulfilledItems: items.filter((i) => i.status === "FULFILLED").length,
+      },
+    }));
+
     return NextResponse.json({
-      requests,
+      requests: requestsWithFulfilled,
       total,
       page,
       totalPages: Math.ceil(total / limit),
