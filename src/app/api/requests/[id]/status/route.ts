@@ -26,6 +26,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: "Request not found" }, { status: 404 });
   }
 
+  // Verify this request is from a restaurant linked to this admin's warehouse
+  const link = await prisma.conversation.findFirst({
+    where: { warehouseId: user!.locationId!, restaurantId: request.restaurantId },
+  });
+  if (!link) {
+    return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  }
+
   const allowed = VALID_TRANSITIONS[request.status];
   if (!allowed || !allowed.includes(status)) {
     return NextResponse.json(

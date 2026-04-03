@@ -3,13 +3,13 @@ import { requireWarehouseAdmin } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error } = await requireWarehouseAdmin();
+  const { error, session } = await requireWarehouseAdmin();
   if (error) return error;
 
   const { id } = await params;
 
   const item = await prisma.inventoryItem.findUnique({
-    where: { id },
+    where: { id, locationId: session!.user.locationId! },
     include: {
       category: true,
       location: true,
@@ -35,7 +35,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error } = await requireWarehouseAdmin();
+  const { error, session } = await requireWarehouseAdmin();
   if (error) return error;
 
   const { id } = await params;
@@ -56,6 +56,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (isNaN(parsed.getTime())) {
       return NextResponse.json({ error: "Invalid expiresAt date" }, { status: 400 });
     }
+  }
+
+  // Verify item belongs to this warehouse before updating
+  const existing = await prisma.inventoryItem.findUnique({ where: { id } });
+  if (!existing || existing.locationId !== session!.user.locationId) {
+    return NextResponse.json({ error: "Item not found" }, { status: 404 });
   }
 
   const item = await prisma.inventoryItem.update({

@@ -34,6 +34,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Source item not found" }, { status: 404 });
   }
 
+  // Ensure the item belongs to this admin's warehouse
+  if (sourceItem.locationId !== user!.locationId) {
+    return NextResponse.json({ error: "Item does not belong to your warehouse" }, { status: 403 });
+  }
+
   // Validate: source must be in a processable status
   if (!["RECEIVED", "PROCESSED", "IN_PROCESSING"].includes(sourceItem.status)) {
     return NextResponse.json(

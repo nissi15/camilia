@@ -3,7 +3,7 @@ import { requireWarehouseAdmin } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
-  const { error } = await requireWarehouseAdmin();
+  const { error, session } = await requireWarehouseAdmin();
   if (error) return error;
 
   const searchParams = req.nextUrl.searchParams;
@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
     where: {
       startedAt: { gte: since },
       stepType: { not: "RECEIVE" },
+      sourceItem: { locationId: session!.user.locationId! },
     },
     include: {
       sourceItem: { include: { category: true } },

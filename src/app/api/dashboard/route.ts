@@ -9,45 +9,58 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const warehouseId = user!.locationId;
+
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfWeek = new Date(startOfDay);
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
 
+  // Get restaurant IDs linked to this warehouse via conversations
+  const linkedRestaurants = await prisma.conversation.findMany({
+    where: { warehouseId: warehouseId! },
+    select: { restaurantId: true },
+  });
+  const linkedRestaurantIds = linkedRestaurants.map((c) => c.restaurantId);
+
   const [totalStock, pendingRequests, processedToday, wasteItems, totalItems, recentRequests, recentSteps] =
     await Promise.all([
-      // Total active stock items
+      // Total active stock items at this warehouse
       prisma.inventoryItem.count({
         where: {
+          locationId: warehouseId!,
           status: { in: ["RECEIVED", "PROCESSED", "PACKAGED"] },
         },
       }),
-      // Pending requests
+      // Pending requests from linked restaurants
       prisma.request.count({
-        where: { status: "PENDING" },
+        where: { status: "PENDING", restaurantId: { in: linkedRestaurantIds } },
       }),
-      // Processed today
+      // Processed today at this warehouse
       prisma.processingStep.count({
         where: {
           startedAt: { gte: startOfDay },
+          sourceItem: { locationId: warehouseId! },
         },
       }),
-      // Waste items this week
+      // Waste items this week at this warehouse
       prisma.inventoryItem.count({
         where: {
+          locationId: warehouseId!,
           status: "WASTE",
           createdAt: { gte: startOfWeek },
         },
       }),
-      // Total items this week (for waste %)
+      // Total items this week at this warehouse (for waste %)
       prisma.inventoryItem.count({
         where: {
+          locationId: warehouseId!,
           createdAt: { gte: startOfWeek },
         },
       }),
-      // Recent pending/packing requests
+      // Recent pending/packing requests from linked restaurants
       prisma.request.findMany({
-        where: { status: { in: ["PENDING", "PACKING"] } },
+        where: { status: { in: ["PENDING", "PACKING"] }, restaurantId: { in: linkedRestaurantIds } },
         include: {
           restaurant: true,
           _count: { select: { items: true } },
@@ -55,8 +68,9 @@ export async function GET(req: NextRequest) {
         orderBy: { requestedAt: "desc" },
         take: 5,
       }),
-      // Recent processing steps for activity feed
+      // Recent processing steps at this warehouse
       prisma.processingStep.findMany({
+        where: { sourceItem: { locationId: warehouseId! } },
         include: {
           sourceItem: true,
           performer: true,

@@ -3,12 +3,25 @@ import { requireWarehouseAdmin } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error } = await requireWarehouseAdmin();
+  const { error, session } = await requireWarehouseAdmin();
   if (error) return error;
 
+  const warehouseId = session!.user.locationId!;
   const { id } = await params;
   const body = await req.json();
   const { itemId, fulfilledItemId, status } = body;
+
+  // Verify the request belongs to a linked restaurant
+  const request = await prisma.request.findUnique({ where: { id } });
+  if (!request) {
+    return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  }
+  const link = await prisma.conversation.findFirst({
+    where: { warehouseId, restaurantId: request.restaurantId },
+  });
+  if (!link) {
+    return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  }
 
   // itemId = the request item id
   // fulfilledItemId = the inventory item assigned

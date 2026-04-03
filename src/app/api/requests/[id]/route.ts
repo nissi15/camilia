@@ -27,11 +27,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   // Restaurant staff can only see their own requests
-  if (
-    user!.role === "RESTAURANT_STAFF" &&
-    request.restaurantId !== user!.locationId
-  ) {
+  if (user!.role === "RESTAURANT_STAFF" && request.restaurantId !== user!.locationId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Warehouse admin can only see requests from linked restaurants
+  if (user!.role === "WAREHOUSE_ADMIN") {
+    const link = await prisma.conversation.findFirst({
+      where: { warehouseId: user!.locationId!, restaurantId: request.restaurantId },
+    });
+    if (!link) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   return NextResponse.json(request);

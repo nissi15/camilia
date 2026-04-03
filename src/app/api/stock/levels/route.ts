@@ -3,13 +3,14 @@ import { requireDualAuth } from "@/lib/telegram/auth-guard";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
-  const { error } = await requireDualAuth(req);
+  const { error, user } = await requireDualAuth(req);
   if (error) return error;
 
   const categoryId = req.nextUrl.searchParams.get("categoryId");
 
-  // Get all non-waste, non-dispatched items grouped by category
+  // Get all non-waste, non-dispatched items at this warehouse
   const where: Record<string, unknown> = {
+    locationId: user!.locationId!,
     status: { in: ["RECEIVED", "PROCESSED", "PACKAGED"] },
   };
   if (categoryId) where.categoryId = categoryId;

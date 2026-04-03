@@ -3,9 +3,10 @@ import { requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
-  const { error } = await requireAuth();
+  const { error, session } = await requireAuth();
   if (error) return error;
 
+  const warehouseId = session!.user.locationId;
   const type = req.nextUrl.searchParams.get("type") || "waste";
   const days = Math.max(1, Math.min(parseInt(req.nextUrl.searchParams.get("days") || "30") || 30, 365));
 
@@ -15,6 +16,7 @@ export async function GET(req: NextRequest) {
   if (type === "waste") {
     const wasteItems = await prisma.inventoryItem.findMany({
       where: {
+        locationId: warehouseId!,
         status: "WASTE",
         createdAt: { gte: since },
       },
@@ -48,6 +50,7 @@ export async function GET(req: NextRequest) {
       where: {
         completedAt: { gte: since },
         stepType: { in: ["BUTCHER", "PORTION", "PACKAGE"] },
+        sourceItem: { locationId: warehouseId! },
       },
       include: {
         sourceItem: { include: { category: true } },

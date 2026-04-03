@@ -11,8 +11,9 @@ export async function GET(req: NextRequest) {
   let conversations;
 
   if (user!.role === "WAREHOUSE_ADMIN") {
-    // Warehouse sees all conversations
+    // Warehouse sees only its own conversations
     conversations = await prisma.conversation.findMany({
+      where: { warehouseId: locationId! },
       include: {
         restaurant: true,
         warehouse: true,

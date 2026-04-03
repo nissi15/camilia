@@ -15,16 +15,25 @@ export async function GET(req: NextRequest) {
   if (error) return error;
 
   // Restaurant staff can only see their own par levels
-  // Warehouse admin can see all or filter by restaurantId
-  let restaurantId: string | null = null;
+  // Warehouse admin sees par levels for their linked restaurants only
+  let parWhere: Record<string, unknown> = {};
   if (user!.role === "RESTAURANT_STAFF") {
-    restaurantId = user!.locationId!;
+    parWhere = { restaurantId: user!.locationId! };
   } else {
-    restaurantId = req.nextUrl.searchParams.get("restaurantId") || null;
+    const filterRestaurantId = req.nextUrl.searchParams.get("restaurantId") || null;
+    if (filterRestaurantId) {
+      parWhere = { restaurantId: filterRestaurantId };
+    } else {
+      const linked = await prisma.conversation.findMany({
+        where: { warehouseId: user!.locationId! },
+        select: { restaurantId: true },
+      });
+      parWhere = { restaurantId: { in: linked.map((c) => c.restaurantId) } };
+    }
   }
 
   const parLevels = await prisma.parLevel.findMany({
-    where: restaurantId ? { restaurantId } : {},
+    where: parWhere,
     include: {
       category: true,
       restaurant: true,

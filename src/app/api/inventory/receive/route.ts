@@ -33,13 +33,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Category not found" }, { status: 400 });
   }
 
-  // Get warehouse location
-  const warehouse = await prisma.location.findFirst({
-    where: { type: "WAREHOUSE" },
-  });
-
-  if (!warehouse) {
-    return NextResponse.json({ error: "No warehouse configured" }, { status: 500 });
+  // Use the admin's own warehouse location
+  const warehouseId = user!.locationId;
+  if (!warehouseId) {
+    return NextResponse.json({ error: "No warehouse assigned to your account" }, { status: 400 });
   }
 
   // Resolve supplier
@@ -65,7 +62,7 @@ export async function POST(req: Request) {
       weightGrams: data.weightGrams,
       unitCount: data.unitCount,
       unitLabel: data.unitLabel,
-      locationId: warehouse.id,
+      locationId: warehouseId,
       supplierId,
       supplier: supplierName,
       lotNumber,

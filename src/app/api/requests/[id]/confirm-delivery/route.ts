@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireDualAuth } from "@/lib/telegram/auth-guard";
 import { prisma } from "@/lib/prisma";
-import { notifyWarehouseAdmins } from "@/lib/telegram/notify";
 
 export async function POST(
   req: Request,
@@ -65,13 +64,25 @@ export async function POST(
     include: { restaurant: true, items: true },
   });
 
-  // Notify all warehouse admins
-  await notifyWarehouseAdmins({
-    type: "DELIVERY_CONFIRMED",
-    title: "Delivery Confirmed",
-    body: `${request.restaurant.name} confirmed delivery of ${request.requestNumber}`,
-    href: `/requests/${request.id}`,
+  // Notify warehouse admins linked to this restaurant
+  const linkedConversations = await prisma.conversation.findMany({
+    where: { restaurantId: request.restaurantId },
+    select: { warehouseId: true },
   });
+  const linkedWarehouseIds = linkedConversations.map((c) => c.warehouseId);
+  const admins = await prisma.user.findMany({
+    where: { role: "WAREHOUSE_ADMIN", locationId: { in: linkedWarehouseIds } },
+    select: { id: true },
+  });
+  const { notifyUser } = await import("@/lib/telegram/notify");
+  await Promise.all(admins.map((a) =>
+    notifyUser(a.id, {
+      type: "DELIVERY_CONFIRMED",
+      title: "Delivery Confirmed",
+      body: `${request.restaurant.name} confirmed delivery of ${request.requestNumber}`,
+      href: `/requests/${request.id}`,
+    })
+  ));
 
   return NextResponse.json(updated);
 }

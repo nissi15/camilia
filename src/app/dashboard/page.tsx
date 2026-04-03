@@ -12,35 +12,45 @@ export default async function WarehouseDashboard() {
   const session = await auth();
   if (!session?.user || session.user.role !== "WAREHOUSE_ADMIN") redirect("/login");
 
+  const warehouseId = session.user.locationId;
+
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfWeek = new Date(startOfDay);
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
 
+  // Get restaurant IDs linked to this warehouse
+  const linkedRestaurants = await prisma.conversation.findMany({
+    where: { warehouseId: warehouseId! },
+    select: { restaurantId: true },
+  });
+  const linkedRestaurantIds = linkedRestaurants.map((c) => c.restaurantId);
+
   const [totalStock, pendingRequests, processedToday, wasteItems, totalItems, recentRequests, recentSteps] =
     await Promise.all([
       prisma.inventoryItem.count({
-        where: { status: { in: ["RECEIVED", "PROCESSED", "PACKAGED"] } },
+        where: { locationId: warehouseId!, status: { in: ["RECEIVED", "PROCESSED", "PACKAGED"] } },
       }),
       prisma.request.count({
-        where: { status: "PENDING" },
+        where: { status: "PENDING", restaurantId: { in: linkedRestaurantIds } },
       }),
       prisma.processingStep.count({
-        where: { startedAt: { gte: startOfDay } },
+        where: { startedAt: { gte: startOfDay }, sourceItem: { locationId: warehouseId! } },
       }),
       prisma.inventoryItem.count({
-        where: { status: "WASTE", createdAt: { gte: startOfWeek } },
+        where: { locationId: warehouseId!, status: "WASTE", createdAt: { gte: startOfWeek } },
       }),
       prisma.inventoryItem.count({
-        where: { createdAt: { gte: startOfWeek } },
+        where: { locationId: warehouseId!, createdAt: { gte: startOfWeek } },
       }),
       prisma.request.findMany({
-        where: { status: { in: ["PENDING", "PACKING"] } },
+        where: { status: { in: ["PENDING", "PACKING"] }, restaurantId: { in: linkedRestaurantIds } },
         include: { restaurant: true, _count: { select: { items: true } } },
         orderBy: { requestedAt: "desc" },
         take: 5,
       }),
       prisma.processingStep.findMany({
+        where: { sourceItem: { locationId: warehouseId! } },
         include: {
           sourceItem: { select: { name: true } },
           performer: { select: { name: true } },

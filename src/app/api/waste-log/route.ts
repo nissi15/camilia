@@ -19,6 +19,7 @@ export async function GET(req: Request) {
   since.setDate(since.getDate() - days);
 
   const where = {
+    locationId: user!.locationId!,
     status: "WASTE" as const,
     createdAt: { gte: since },
     ...(categoryId ? { categoryId } : {}),
@@ -56,7 +57,7 @@ export async function GET(req: Request) {
 
     // Aggregate stats for the period
     prisma.inventoryItem.aggregate({
-      where: { status: "WASTE", createdAt: { gte: since } },
+      where: { locationId: user!.locationId!, status: "WASTE", createdAt: { gte: since } },
       _sum: { weightGrams: true },
       _count: true,
     }),
@@ -64,7 +65,7 @@ export async function GET(req: Request) {
     // Top waste categories
     prisma.inventoryItem.groupBy({
       by: ["categoryId"],
-      where: { status: "WASTE", createdAt: { gte: since } },
+      where: { locationId: user!.locationId!, status: "WASTE", createdAt: { gte: since } },
       _sum: { weightGrams: true },
       _count: true,
       orderBy: { _sum: { weightGrams: "desc" } },
@@ -82,7 +83,7 @@ export async function GET(req: Request) {
 
   // Total items processed in the period for waste percentage
   const totalProcessed = await prisma.inventoryItem.count({
-    where: { createdAt: { gte: since } },
+    where: { locationId: user!.locationId!, createdAt: { gte: since } },
   });
 
   return NextResponse.json({

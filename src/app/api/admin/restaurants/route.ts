@@ -13,9 +13,17 @@ export async function GET() {
   const { error, session } = await requireWarehouseAdmin();
   if (error) return error;
 
-  // Return all restaurants (for this warehouse admin's context)
+  const warehouseId = session!.user.locationId!;
+
+  // Only return restaurants linked to this warehouse via conversations
+  const linkedRestaurants = await prisma.conversation.findMany({
+    where: { warehouseId },
+    select: { restaurantId: true },
+  });
+  const linkedIds = linkedRestaurants.map((c) => c.restaurantId);
+
   const restaurants = await prisma.location.findMany({
-    where: { type: "RESTAURANT" },
+    where: { type: "RESTAURANT", id: { in: linkedIds } },
     include: {
       users: {
         select: { id: true, name: true, email: true },
@@ -29,8 +37,10 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const { error } = await requireWarehouseAdmin();
+  const { error, session } = await requireWarehouseAdmin();
   if (error) return error;
+
+  const warehouseId = session!.user.locationId!;
 
   const body = await req.json();
   const parsed = createRestaurantSchema.safeParse(body);
@@ -53,22 +63,15 @@ export async function POST(req: Request) {
     },
   });
 
-  // Also create a conversation between this restaurant and the admin's warehouse
-  const admin = await prisma.user.findFirst({
-    where: { role: "WAREHOUSE_ADMIN" },
-    select: { locationId: true },
+  // Link this restaurant to the current admin's warehouse via a conversation
+  await prisma.conversation.create({
+    data: {
+      restaurantId: restaurant.id,
+      warehouseId,
+    },
+  }).catch(() => {
+    // Ignore if conversation already exists
   });
-
-  if (admin?.locationId) {
-    await prisma.conversation.create({
-      data: {
-        restaurantId: restaurant.id,
-        warehouseId: admin.locationId,
-      },
-    }).catch(() => {
-      // Ignore if conversation already exists
-    });
-  }
 
   return NextResponse.json(restaurant, { status: 201 });
 }

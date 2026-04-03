@@ -3,14 +3,14 @@ import { requireWarehouseAdmin } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error } = await requireWarehouseAdmin();
+  const { error, session } = await requireWarehouseAdmin();
   if (error) return error;
 
   const { id } = await params;
 
-  // Get the item to find its root
+  // Get the item to find its root — scoped to this warehouse
   const item = await prisma.inventoryItem.findUnique({
-    where: { id },
+    where: { id, locationId: session!.user.locationId! },
   });
 
   if (!item) {

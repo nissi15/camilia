@@ -15,17 +15,14 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Scope inventory search based on role
+  // Scope inventory search based on role — always filter by location
   const inventoryWhere: Record<string, unknown> = {
+    locationId: session!.user.locationId!,
     OR: [
       { name: { contains: q, mode: "insensitive" } },
       { batchCode: { contains: q, mode: "insensitive" } },
     ],
   };
-
-  if (session!.user.role === "RESTAURANT_STAFF" && session!.user.locationId) {
-    inventoryWhere.locationId = session!.user.locationId;
-  }
 
   // Scope requests search based on role
   const requestsWhere: Record<string, unknown> = {
@@ -37,6 +34,13 @@ export async function GET(req: NextRequest) {
 
   if (session!.user.role === "RESTAURANT_STAFF") {
     requestsWhere.restaurantId = session!.user.locationId;
+  } else {
+    // Warehouse admin: only search requests from linked restaurants
+    const linkedRestaurants = await prisma.conversation.findMany({
+      where: { warehouseId: session!.user.locationId! },
+      select: { restaurantId: true },
+    });
+    requestsWhere.restaurantId = { in: linkedRestaurants.map((c) => c.restaurantId) };
   }
 
   const [inventory, requests] = await Promise.all([

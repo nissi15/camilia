@@ -19,10 +19,10 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  if (
-    user!.role === "RESTAURANT_STAFF" &&
-    conversation.restaurantId !== user!.locationId
-  ) {
+  if (user!.role === "RESTAURANT_STAFF" && conversation.restaurantId !== user!.locationId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  if (user!.role === "WAREHOUSE_ADMIN" && conversation.warehouseId !== user!.locationId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -68,10 +68,10 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  if (
-    user!.role === "RESTAURANT_STAFF" &&
-    conversation.restaurantId !== user!.locationId
-  ) {
+  if (user!.role === "RESTAURANT_STAFF" && conversation.restaurantId !== user!.locationId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  if (user!.role === "WAREHOUSE_ADMIN" && conversation.warehouseId !== user!.locationId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

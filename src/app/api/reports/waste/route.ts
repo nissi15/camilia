@@ -19,11 +19,12 @@ export async function GET(req: NextRequest) {
 
   const where = Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {};
 
-  // Get processing steps with waste
+  // Get processing steps with waste (scoped to this warehouse)
   const steps = await prisma.processingStep.findMany({
     where: {
       ...where,
       wasteWeight: { gt: 0 },
+      sourceItem: { locationId: user!.locationId! },
     },
     include: {
       sourceItem: {
