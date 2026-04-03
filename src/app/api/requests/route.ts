@@ -24,8 +24,19 @@ export async function GET(req: NextRequest) {
     // Restaurant staff only sees their own requests
     if (user!.role === "RESTAURANT_STAFF") {
       where.restaurantId = user!.locationId;
-    } else if (restaurantId) {
-      where.restaurantId = restaurantId;
+    } else {
+      // Warehouse admin: only see requests from linked restaurants
+      const linkedRestaurants = await prisma.conversation.findMany({
+        where: { warehouseId: user!.locationId! },
+        select: { restaurantId: true },
+      });
+      const linkedIds = linkedRestaurants.map((c) => c.restaurantId);
+      if (restaurantId) {
+        // Filter further if a specific restaurant is requested, but only if it's linked
+        where.restaurantId = linkedIds.includes(restaurantId) ? restaurantId : "__none__";
+      } else {
+        where.restaurantId = { in: linkedIds };
+      }
     }
 
     if (status && status !== "ALL") {
@@ -132,13 +143,19 @@ export async function POST(req: Request) {
   // Build item summary for notification
   const itemSummary = request.items.map((i) => `${i.quantity}x ${i.description}`).join(", ");
 
-  // Notify warehouse admins via both in-app and Telegram
+  // Notify warehouse admins linked to this restaurant via conversations
   const keyboard = new InlineKeyboard()
     .text("Approve", `approve:${request.id}`)
     .text("Reject", `reject:${request.id}`);
 
+  const linkedConversations = await prisma.conversation.findMany({
+    where: { restaurantId: locationId },
+    select: { warehouseId: true },
+  });
+  const linkedWarehouseIds = linkedConversations.map((c) => c.warehouseId);
+
   const admins = await prisma.user.findMany({
-    where: { role: "WAREHOUSE_ADMIN" },
+    where: { role: "WAREHOUSE_ADMIN", locationId: { in: linkedWarehouseIds } },
     select: { id: true },
   });
 

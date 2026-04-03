@@ -18,7 +18,9 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
   const limit = Math.max(1, Math.min(parseInt(searchParams.get("limit") || "20") || 20, 100));
 
-  const where: Record<string, unknown> = {};
+  const where: Record<string, unknown> = {
+    locationId: user!.locationId,
+  };
 
   if (status) {
     const statuses = status.split(",").map((s) => s.trim());
