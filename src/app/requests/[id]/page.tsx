@@ -161,16 +161,6 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                   Mark as Dispatched
                 </Button>
               )}
-              {request.status === "DISPATCHED" && (
-                <Button onClick={() => updateStatus("DELIVERED")} disabled={updating} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl">
-                  Mark as Delivered
-                </Button>
-              )}
-              {["PENDING", "PACKING"].includes(request.status) && (
-                <Button onClick={() => updateStatus("CANCELLED")} disabled={updating} variant="outline" className="w-full text-error border-error/30 hover:bg-error/5 rounded-xl">
-                  Cancel Request
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>

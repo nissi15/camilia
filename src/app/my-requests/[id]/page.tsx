@@ -37,6 +37,7 @@ export default function MyRequestDetailPage({ params }: { params: Promise<{ id: 
   const [request, setRequest] = useState<RequestDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     fetch(`/api/requests/${id}`)
@@ -61,6 +62,23 @@ export default function MyRequestDetailPage({ params }: { params: Promise<{ id: 
       toast.error("Failed to cancel request");
     }
     setCancelling(false);
+  }
+
+  async function confirmDelivery() {
+    setConfirming(true);
+    const res = await fetch(`/api/requests/${id}/confirm-delivery`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setRequest((prev) => prev ? { ...prev, ...updated } : prev);
+      toast.success("Delivery confirmed");
+    } else {
+      toast.error("Failed to confirm delivery");
+    }
+    setConfirming(false);
   }
 
   if (loading) {
@@ -144,7 +162,18 @@ export default function MyRequestDetailPage({ params }: { params: Promise<{ id: 
               ))}
             </div>
 
-            {request.status === "PENDING" && (
+            {request.status === "DISPATCHED" && (
+              <div className="pt-3">
+                <Button
+                  onClick={confirmDelivery}
+                  disabled={confirming}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"
+                >
+                  {confirming ? "Confirming…" : "Confirm Delivery"}
+                </Button>
+              </div>
+            )}
+            {["PENDING", "PACKING"].includes(request.status) && (
               <div className="pt-3">
                 <Button
                   onClick={cancelRequest}

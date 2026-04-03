@@ -3,17 +3,21 @@ import { requireDualAuth } from "@/lib/telegram/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { notifyUser } from "@/lib/telegram/notify";
 
-const VALID_TRANSITIONS: Record<string, string[]> = {
-  PENDING: ["PACKING", "CANCELLED"],
-  PACKING: ["DISPATCHED", "CANCELLED"],
-  DISPATCHED: ["DELIVERED"],
+const WAREHOUSE_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ["PACKING"],
+  PACKING: ["DISPATCHED"],
+};
+
+const RESTAURANT_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ["CANCELLED"],
+  PACKING: ["CANCELLED"],
 };
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { error, user } = await requireDualAuth(req);
   if (error) return error;
 
-  if (user!.role !== "WAREHOUSE_ADMIN") {
+  if (user!.role !== "WAREHOUSE_ADMIN" && user!.role !== "RESTAURANT_STAFF") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -34,12 +38,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: "Request not found" }, { status: 404 });
   }
 
-  const allowed = VALID_TRANSITIONS[request.status];
+  const transitions = user!.role === "WAREHOUSE_ADMIN"
+    ? WAREHOUSE_TRANSITIONS
+    : RESTAURANT_TRANSITIONS;
+  const allowed = transitions[request.status];
   if (!allowed || !allowed.includes(status)) {
     return NextResponse.json(
       { error: `Cannot transition from ${request.status} to ${status}` },
       { status: 400 }
     );
+  }
+
+  // Restaurant staff can only cancel their own restaurant's requests
+  if (user!.role === "RESTAURANT_STAFF" && request.restaurantId !== user!.locationId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const updateData: Record<string, unknown> = { status };
