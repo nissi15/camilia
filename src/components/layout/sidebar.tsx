@@ -27,14 +27,14 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   section?: string;
-  badgeKey?: "notifications" | "messages";
+  badgeKey?: "notifications" | "messages" | "requests";
 }
 
 const warehouseNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, section: "OVERVIEW" },
   { label: "Inventory", href: "/inventory", icon: Package, section: "OPERATIONS" },
   { label: "Processing", href: "/processing", icon: Scissors },
-  { label: "Requests", href: "/requests", icon: ClipboardList },
+  { label: "Requests", href: "/requests", icon: ClipboardList, badgeKey: "requests" },
   { label: "Categories", href: "/categories", icon: Tags },
   { label: "Waste Log", href: "/waste-log", icon: Trash2 },
   { label: "Reports", href: "/reports", icon: BarChart3, section: "INSIGHTS" },
@@ -60,9 +60,10 @@ interface SidebarProps {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const [badges, setBadges] = useState<{ notifications: number; messages: number }>({
+  const [badges, setBadges] = useState<{ notifications: number; messages: number; requests: number }>({
     notifications: 0,
     messages: 0,
+    requests: 0,
   });
 
   const isWarehouse = session?.user?.role === "WAREHOUSE_ADMIN";
@@ -71,16 +72,22 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   // Fetch badge counts
   const fetchBadges = useCallback(async () => {
     try {
-      const [notifRes, convRes] = await Promise.all([
+      const [notifRes, convRes, reqRes] = await Promise.all([
         fetch("/api/notifications/count"),
         fetch("/api/messages/conversations"),
+        fetch("/api/requests/count"),
       ]);
       const notif = notifRes.ok ? await notifRes.json() : { unreadCount: 0 };
       const convos = convRes.ok ? await convRes.json() : [];
+      const reqCount = reqRes.ok ? await reqRes.json() : { pendingCount: 0 };
       const msgUnread = Array.isArray(convos)
         ? convos.reduce((sum: number, c: { unreadCount: number }) => sum + (c.unreadCount || 0), 0)
         : 0;
-      setBadges({ notifications: notif.unreadCount || 0, messages: msgUnread });
+      setBadges({
+        notifications: notif.unreadCount || 0,
+        messages: msgUnread,
+        requests: reqCount.pendingCount || 0,
+      });
     } catch { /* silent */ }
   }, []);
 

@@ -208,7 +208,10 @@ export default function RequestsPage() {
                       <span className="text-on-surface-variant">/{req._count.items}</span>
                     </TableCell>
                     <TableCell className="py-3 pr-4 text-sm text-on-surface-variant text-right">
-                      {new Date(req.requestedAt).toLocaleDateString()}
+                      <div>{new Date(req.requestedAt).toLocaleDateString()}</div>
+                      <div className="text-xs text-on-surface-variant/60">
+                        {new Date(req.requestedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
