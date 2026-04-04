@@ -51,6 +51,7 @@ export default function ReceiveIngredientPage() {
     weight: "",
     unitCount: "1",
     unitLabel: "piece",
+    costRwf: "",
     supplier: "",
     expiresAt: "",
     notes: "",
@@ -83,6 +84,7 @@ export default function ReceiveIngredientPage() {
         weightGrams,
         unitCount: parseInt(form.unitCount) || 1,
         unitLabel: form.unitLabel,
+        costRwf: form.costRwf ? parseFloat(form.costRwf) : undefined,
         supplier: form.supplier || undefined,
         expiresAt: form.expiresAt || undefined,
         notes: form.notes || undefined,
@@ -207,6 +209,24 @@ export default function ReceiveIngredientPage() {
                   </Select>
                 </div>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="costRwf">Total Cost (RWF)</Label>
+              <Input
+                id="costRwf"
+                type="number"
+                step="1"
+                min="0"
+                placeholder="e.g., 150000"
+                value={form.costRwf}
+                onChange={(e) => setForm((f) => ({ ...f, costRwf: e.target.value }))}
+              />
+              {form.costRwf && form.weight && (
+                <p className="text-xs text-on-surface-variant">
+                  = {Math.round(parseFloat(form.costRwf) / parseFloat(form.weight)).toLocaleString()} RWF per {weightUnit}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">

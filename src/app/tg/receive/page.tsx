@@ -211,7 +211,7 @@ export default function ReceivePage() {
 
         {/* Cost */}
         <div>
-          <label className="tg-label">Cost (RWF)</label>
+          <label className="tg-label">Total Cost (RWF)</label>
           <input
             type="number"
             value={form.costRwf}
@@ -219,6 +219,11 @@ export default function ReceivePage() {
             placeholder="e.g. 50000"
             className="tg-input"
           />
+          {form.costRwf && form.weightGrams && (
+            <p className="text-xs text-on-surface-variant mt-1 px-1">
+              = {Math.round(parseFloat(form.costRwf) / (parseFloat(form.weightGrams) / 1000)).toLocaleString()} RWF per kg
+            </p>
+          )}
         </div>
 
         {/* Expiry */}

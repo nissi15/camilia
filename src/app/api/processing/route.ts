@@ -104,12 +104,21 @@ export async function POST(req: Request) {
       },
     });
 
-    // 2. Create output items
+    // 2. Propagate cost proportionally by weight
+    const inputWeight = Number(sourceItem.weightGrams || 0);
+    const sourceCost = Number(sourceItem.costRwf || 0);
+    const costPerGram = inputWeight > 0 && sourceCost > 0 ? sourceCost / inputWeight : 0;
+
+    // 3. Create output items
     const outputItems = [];
     for (const output of data.outputs) {
       const category = await tx.category.findUnique({
         where: { id: output.categoryId },
       });
+
+      const outputCost = costPerGram > 0 && output.weightGrams
+        ? Math.round(costPerGram * output.weightGrams)
+        : null;
 
       const outputItem = await tx.inventoryItem.create({
         data: {
@@ -120,6 +129,7 @@ export async function POST(req: Request) {
           weightGrams: output.weightGrams,
           unitCount: output.unitCount,
           unitLabel: output.unitLabel,
+          costRwf: outputCost,
           parentItemId: sourceItem.id,
           rootItemId: rootItemId,
           locationId: sourceItem.locationId,
@@ -142,8 +152,9 @@ export async function POST(req: Request) {
       outputItems.push(outputItem);
     }
 
-    // 4. Create waste item if applicable
+    // 4. Create waste item if applicable (with cost = money lost)
     if (data.wasteWeight > 0) {
+      const wasteCost = costPerGram > 0 ? Math.round(costPerGram * data.wasteWeight) : null;
       const wasteItem = await tx.inventoryItem.create({
         data: {
           batchCode: generateBatchCode("WASTE"),
@@ -151,6 +162,7 @@ export async function POST(req: Request) {
           name: `Waste from ${sourceItem.name}`,
           status: "WASTE",
           weightGrams: data.wasteWeight,
+          costRwf: wasteCost,
           unitCount: 1,
           unitLabel: "waste",
           parentItemId: sourceItem.id,
